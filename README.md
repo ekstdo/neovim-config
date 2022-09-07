@@ -1,6 +1,6 @@
 # my personal neovim configs
 
-![](https://postimg.cc/PCFym9zX)
+![image](https://i.postimg.cc/YStPwwvW/neovim-screenshot.png)
 
 > :warning: **the bindings of this config are heavily focused on the colemak keyboard layout**
 
