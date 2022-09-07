@@ -169,9 +169,9 @@ if s:tex_fast =~# 'm'
    syn region texMatcherNM	matchgroup=Delimiter start="\["				end="]"			transparent contains=@texMatchNMGroup
   endif
   if !s:tex_nospell
-   syn region texParen		start="("	end=")"								transparent contains=@texMatchGroup,@Spell
+   " syn region texParen		start="("	end=")"								transparent contains=@texMatchGroup,@Spell
   else
-   syn region texParen		start="("	end=")"								transparent contains=@texMatchGroup
+   " syn region texParen		start="("	end=")"								transparent contains=@texMatchGroup
   endif
 endif
 if !s:tex_no_error
