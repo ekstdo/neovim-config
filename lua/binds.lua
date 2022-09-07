@@ -69,13 +69,13 @@ ss:<C-w>>
 <leader>wa:<c-w><Left>
 <leader>ws:<c-w><Right>
 <leader>wr:<c-w><Down>
-<leader>tf::Limelight!
 <C-down>:<Plug>newCursor
+<space>tts::set tabstop=2 shiftwidth=2 expandtab | retab
+<space>tde::v/./d<CR>
+<space>tw::set wrap!<CR>
+<space>ss::sp<CR><C-w><Down>:term<CR>
 <C-a>:<Esc>ggVG<CR>
-<leader>nf::Telescope find_files<CR>
-<leader>nb::Telescope buffers<CR>
-<leader>ns::Telescope live_grep<CR>
-<leader>nh::Telescope help_tags<CR>
+<leader>tw::set wrap!<CR>
 <leader>sl::set number!<CR>
 <leader>ttt::Pantran<CR>]], {pandocParam = g.md_args} )
 

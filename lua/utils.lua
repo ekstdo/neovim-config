@@ -32,3 +32,8 @@ function split(str, delim)
 	return match
 end
 
+local path = require "plenary.path"
+
+CONFIG_FILE_PATH = path:new("$MYVIMRC"):expand()
+
+CURRENT_CONFIG_FOLDER = path:new(CONFIG_FILE_PATH):parent().filename

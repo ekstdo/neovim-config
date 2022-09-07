@@ -1,0 +1,508 @@
+global !p
+def isMath():
+    # DEBUGGING
+    synstack = vim.eval("map(synstack(line('.'), col('.') - (col('.')>=2 ? 1 : 0)), {i,v -> synIDattr(v, 'name')})")
+    print("synstack: " + str(synstack))
+    syntaxgroup = vim.eval("get(reverse(map(synstack(line('.'), col('.') - (col('.')>=2 ? 1 : 0)), {i,v -> synIDattr(v, 'name')})), 0, '')")
+    #print("syntaxgroup (rev): "+ syntaxgroup)
+    # MODIFICATION reverse() is not necessary since pandocLaTeXInlineMath is the outer group anyway.
+    syntaxgroup = vim.eval("get(map(synstack(line('.'), col('.') - (col('.')>=2 ? 1 : 0)), {i,v -> synIDattr(v, 'name')}), 0, '')")
+    print("syntaxgroup: "+ syntaxgroup, int(vim.eval("'"+syntaxgroup+"' =~# 'pandocLaTeXInlineMath'")))
+    return int(vim.eval("'"+syntaxgroup+"' =~# '\\(pandocLaTeXInlineMath\\|pandocLaTeXMathBlock\\)'"))
+endglobal
+
+context "isMath()"
+snippet ^^ "^{ }" iA
+^{$1}$0
+endsnippet
+
+context "isMath()"
+snippet under "underset" iA
+\underset{${1:\\text{$2}}}{${3:=}}$0
+endsnippet
+
+context "isMath()"
+snippet over "overset" iA
+\\overset{${1:\\text{$2}}}{${3:=}}$0
+endsnippet
+
+
+context "isMath()"
+snippet __ "_{ }" iA
+_{$1}$0
+endsnippet
+
+context "isMath()"
+snippet fora "forall" iA
+\\forall
+endsnippet
+
+context "isMath()"
+snippet exi "forall" iA
+\\exists
+endsnippet
+
+context "isMath()"
+snippet ooo "infinity" iA
+\\infty
+endsnippet
+
+context "isMath()"
+snippet omg "infinity" iA
+\\omega
+endsnippet
+
+context "isMath()"
+snippet cc "subset" iA
+\\subset
+endsnippet
+
+context "isMath()"
+snippet c= "subset equals" iA
+\\subseteq
+endsnippet
+
+context "isMath()"
+snippet <= "subset" iA
+\\leq
+endsnippet
+
+context "isMath()"
+snippet >= "subset" iA
+\\geq
+endsnippet
+
+context "isMath()"
+snippet folge "Folge" iA
+($1_n)_{n\geq m}
+endsnippet
+
+context "isMath()"
+snippet reihe "Reihe" iA
+\sum_{k = m}^{\infty} $1_k
+endsnippet
+
+
+context "isMath()"
+snippet norm "Norm" iA
+\|$1\|$0
+endsnippet
+
+context "isMath()"
+snippet >> "much greater" iA
+\\gg
+endsnippet
+
+context "isMath()"
+snippet << "much less" iA
+\\ll
+endsnippet
+
+context "isMath()"
+snippet ddt "derivative" iA
+\\frac{d}{dt}
+endsnippet
+
+context "isMath()"
+snippet floor "floor" iA
+\\lfloor $1 \\rfloor $0
+endsnippet
+
+context "isMath()"
+snippet ceil "ceil" iA
+\\lceil $1 \\rceil $0
+endsnippet
+
+snippet kbanach "K-Banachraum" w
+$\mathbb{K}$-Banachraum
+endsnippet
+
+snippet bbracket "double brackets" w
+\llbracket $1 \rrbracket $0
+endsnippet
+
+snippet ce "chemistry" w
+\\ce{$1} $0
+endsnippet
+
+snippet $$ "$ $" iA
+$$1$$0
+endsnippet
+
+snippet box "Box"
+`!p snip.rv = '┌' + '─' * (len(t[1]) + 2) + '┐'`
+│ $1 │
+`!p snip.rv = '└' + '─' * (len(t[1]) + 2) + '┘'`
+$0
+endsnippet
+
+snippet sympy "sympy block " w
+sympy $1 sympy$0
+endsnippet
+
+snippet reddd "mark in red (Latex)" wA
+\textcolor{red}{$0}
+endsnippet
+
+snippet col "mark in color (Latex)" w
+\textcolor{$1}{$0}
+endsnippet
+
+
+snippet orange "mark in orange (Latex)" w
+\textcolor{orange}{$0}
+endsnippet
+
+snippet <un "underline" wA
+\underline{$0}
+endsnippet
+
+context "isMath()"
+snippet not "not" i
+\lnot
+endsnippet
+
+snippet in "index" w
+_{$0}
+endsnippet
+
+context "isMath()"
+snippet ents "entspricht" iA
+\widehat{=}
+endsnippet
+
+context "isMath()"
+snippet potm "potenzmenge" iA
+\mathfrak{P}($0)
+endsnippet
+
+context "isMath()"
+snippet umge "Umgebung" iA
+U_{\epsilon}($0)
+endsnippet
+
+context "isMath()"
+snippet umgr "Umgebung" iA
+U_{\rho}($0)
+endsnippet
+
+context "isMath()"
+snippet umgd "Umgebung" iA
+U_{\delta}($0)
+endsnippet
+
+
+context "isMath()"
+snippet cases "Zweige" iA
+\begin{cases}
+	$0
+\end{cases}
+endsnippet
+
+
+
+snippet un "underline" w
+\underline{$0}
+endsnippet
+
+
+
+
+
+priority 10
+context "isMath()"
+snippet "bar" "bar" riA
+\overline{$1}$0
+endsnippet
+
+priority 100
+context "isMath()"
+snippet "([a-zA-Z]|[a-zA-Z][0-9_]\d)bar" "bar" riA
+\overline{`!p snip.rv=match.group(1)`}
+endsnippet
+
+priority 100
+context "isMath()"
+snippet "(\([a-zA-Z\\0-9]+\))bar" "bar" riA
+\overline{`!p snip.rv=match.group(1)[1:-1]`}
+endsnippet
+
+priority 10
+context "isMath()"
+snippet "hat" "hat" riA
+\hat{$1}$0
+endsnippet
+
+priority 100
+context "isMath()"
+snippet "([a-zA-Z]|[a-zA-Z][0-9_]\d)hat" "hat" riA
+\hat{`!p snip.rv=match.group(1)`}
+endsnippet
+
+priority 10
+context "isMath()"
+snippet "til" "hat" riA
+\tilde{$1}$0
+endsnippet
+
+priority 100
+context "isMath()"
+snippet "([a-zA-Z]|[a-zA-Z][0-9_]\d)til" "til" riA
+\tilde{`!p snip.rv=match.group(1)`}
+endsnippet
+
+
+
+
+context "isMath()"
+snippet nat "natural numbers" iA
+\mathbb{N}_0
+endsnippet
+
+context "isMath()"
+snippet comp "complex numbers" iA
+\mathbb{C}
+endsnippet
+
+snippet körp "körper" w
+(\mathbb{K}, +, \cdot, 0_K, 1_K)
+endsnippet
+
+snippet kk "körper menge" w
+\mathbb{K}
+endsnippet
+
+snippet kkvr "körper vektorraum" w
+$\mathbb{K}$ Vektorraum
+endsnippet
+
+snippet F "some numbers" w
+\mathbb{F}_
+endsnippet
+
+snippet fun "funktion" w
+f: \mathbb{R} \to \mathbb{R}, x \mapsto 
+endsnippet
+
+snippet phi "phi" w
+\varphi
+endsnippet
+
+snippet set "set" w
+\\{$1 | $0 \\}
+endsnippet
+
+snippet til "tilde" w
+\textasciitilde
+endsnippet
+
+snippet img "image" w
+![$0](./assets/$1)
+endsnippet
+
+context "isMath()"
+snippet xx "times" iA
+\times
+endsnippet
+
+context "isMath()"
+snippet LR "Leftrightarrow" iA
+\Leftrightarrow
+endsnippet
+
+context "isMath()"
+snippet rarr "rightarrow" iA
+\rightarrow
+endsnippet
+
+context "isMath()"
+snippet Rarr "Rightarrow" iA
+\Rightarrow
+endsnippet
+
+context "isMath()"
+snippet sq "squared" i
+^{${1:2}}$0
+endsnippet
+
+context "isMath()"
+snippet srt "sqrt" iA
+\sqrt{$1}$0
+endsnippet
+
+context "isMath()"
+snippet inv "inverted" iA
+^{-1}
+endsnippet
+
+context "isMath()"
+snippet ** "times" iA
+\cdot
+endsnippet
+
+context "isMath()"
+snippet zint "signed integers" iA
+\mathbb{Z}
+endsnippet
+
+context "isMath()"
+snippet int "signed integers" iA
+\int_{${1:0}}^{${2:\infty}}$0 d${3:x}
+endsnippet
+
+context "isMath()"
+snippet rat "rational numbers" iA
+\mathbb{Q}
+endsnippet
+
+context "isMath()"
+snippet real "real numbers" iA
+\mathbb{R}
+endsnippet
+
+context "isMath()"
+snippet ' "rational numbers" iA
+\textquotesingle
+endsnippet
+
+snippet beg "begin{} / end{}" bA
+\begin{$1}
+	$0
+\end{$1}
+endsnippet
+
+context "isMath()"
+snippet '([A-Za-z])(\d)' "auto subscript" wrA
+`!p snip.rv = match.group(1)`_`!p snip.rv = match.group(2)`
+endsnippet
+
+context "isMath()"
+snippet '([A-Za-z])_(\d\d)' "auto subscript2" wrA
+`!p snip.rv = match.group(1)`_{`!p snip.rv = match.group(2)`}
+endsnippet
+
+
+snippet mat "matrices" w
+\left(\begin{matrix} 
+$1 & $2 & $3 \\\\ 
+$4 & $5 & $6 \\\\ 
+$7 & $8 & $9
+\end{matrix}\right)$0
+endsnippet
+
+snippet gto "matrices" w
+\begin{array}{|c} 
+$1 \\\\ 
+$2 \\\\ 
+$3
+\end{array} \leadsto \left(\begin{matrix}
+$4 & $5 & $6 \\\\ 
+$7 & $8 & $9 \\\\ 
+$10 & $11 & $12
+\end{matrix}\right)$0
+endsnippet
+
+snippet tab "table" w
+\begin{array}{ccc} 
+$1 & $2 & $3 \\\\ 
+$4 & $5 & $6 \\\\ 
+$7 & $8 & $9
+\end{array}$0
+endsnippet
+
+snippet vec "vectors" w
+\left(\begin{array}{c} $1 \\\\ $2 \\\\ $3 \end{array}\right)$0
+endsnippet
+
+
+
+priority 10000
+snippet 'sympy(.*)sympy' "evaluate sympy" wr
+`!p
+from sympy import *
+x, y, z, t = symbols('x y z t')
+k, m, n = symbols('k m n', integer=True)
+f, g, h = symbols('f g h', cls=Function)
+init_printing()
+snip.rv = eval('latex(' + match.group(1).replace('\\', '') \
+    .replace('^', '**') \
+    .replace('{', '(') \
+    .replace('}', ')') + ')')
+`
+endsnippet
+
+context "isMath()"
+snippet '((\d+)|(\d*)(\\)?([A-Za-z]+)((\^|_)(\{\d+\}|\d))*)/' "Fraction" wrA
+\\frac{`!p snip.rv = match.group(1)`}{$1}$0
+endsnippet
+
+context "isMath()"
+priority 1000
+snippet '^.*\)/' "() Fraction" wrA
+`!p
+stripped = match.string[:-1]
+depth = 0
+i = len(stripped) - 1
+while True:
+    if stripped[i] == ')': depth += 1
+    if stripped[i] == '(': depth -= 1
+    if depth == 0: break;
+    i -= 1
+snip.rv = stripped[0:i] + "\\frac{" + stripped[i+1:-1] + "}"
+`{$1}$0
+endsnippet
+
+snippet lim "limits" w 
+\lim\limits_{${2:n} \to ${1:\infty}} $0
+endsnippet
+
+snippet taylor "taylor" w
+\sum_{${1:k}=${2:0}}^{${3:\infty}} ${4:c_$1} (x-a)^$1 $0
+endsnippet
+
+snippet stac "stack" w 
+\stack{$1}{$0}
+endsnippet
+
+snippet qq "quad space" wA
+\quad
+endsnippet
+
+context "isMath()"
+snippet eps "eps" wA
+\epsilon
+endsnippet
+
+context "isMath()"
+snippet sum "sum" wA
+\sum_{${2:i}}^{${1:n}}$0
+endsnippet
+
+context "isMath()"
+snippet prod "prod" wA
+\prod_{${2:i}}^{${1:n}}$0
+endsnippet
+
+
+snippet pascals "pascals triangle" b
+$$\begin{tabular}{rccccccccc}
+  $n=0$:&    &    &    &    &  1\\\noalign{\smallskip\smallskip}
+  $n=1$:&    &    &    &  1 &    &  1\\\noalign{\smallskip\smallskip}
+  $n=2$:&    &    &  1 &    &  2 &    &  1\\\noalign{\smallskip\smallskip}
+  $n=3$:&    &  1 &    &  3 &    &  3 &    &  1\\\noalign{\smallskip\smallskip}
+  $n=4$:&  1 &    &  4 &    &  6 &    &  4 &    &  1\\\noalign{\smallskip\smallskip}
+  \end{tabular}$$
+endsnippet
+
+snippet graph "graph" w
+\`\`\`{.graphviz}
+digraph G {
+	$1 -> $2;
+	$3
+} $0
+\`\`\`
+endsnippet
+
+snippet nrt "nth root" iA
+\sqrt[${1:n}]{$2}$0
+endsnippet
