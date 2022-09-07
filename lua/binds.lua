@@ -74,6 +74,7 @@ ss:<C-w>>
 <space>tde::v/./d<CR>
 <space>tw::set wrap!<CR>
 <space>ss::sp<CR><C-w><Down>:term<CR>
+<space>sd::Drawing
 <C-a>:<Esc>ggVG<CR>
 <leader>tw::set wrap!<CR>
 <leader>sl::set number!<CR>

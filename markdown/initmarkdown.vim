@@ -1680,3 +1680,4 @@ inoreabbrev <expr> __
           \ <SID>isAtStartOfLine('__') ?
           \ '<c-o>:silent! TableModeDisable<cr>' : '__'
 
+exec "source " . fnamemodify(expand("$MYVIMRC"), ":h") . "/markdown/corrections.vim"

@@ -25,3 +25,40 @@ set.conceallevel = 2
 
 vim.opt.completeopt = {'menu', 'menuone', 'noselect'}
 
+g.md_args = "--template eisvogel --from markdown+grid_tables --listings --filter pandoc-imagine --pdf-engine=xelatex" -- markdown previewer
+g.tagbar_type_elixir = {
+     ctagstype = 'elixir',
+     kinds = {
+         'p:protocols',
+         'm:modules',
+         'e:exceptions',
+         'y:types',
+         'd:delegates',
+         'f:functions',
+         'c:callbacks',
+         'a:macros',
+         't:tests',
+         'i:implementations',
+         'o:operators',
+         'r:records'
+     },
+     sro = '.',
+     kind2scope = {
+         p = 'protocol',
+         m = 'module'
+	 },
+     scope2kind = {
+         protocol = 'p',
+         module = 'm'
+     },
+    sort = 0
+ }
+run("command! -nargs=1 Draw !cat <args> && ((inkscape <args> &) || true) || (echo \"<svg></svg>\" > <args> && inkscape <args> &)")
+function draw()
+  local i = 0
+  while not fn.filereadable(fn.expand('%:r') .. tostring(i) .. ".svg") do
+    i = i + 1
+  end
+  run("Draw " .. fn.expand('%:r') .. tostring(i) .. ".svg")
+end
+run("command! Drawing call v:lua.draw()")

@@ -99,7 +99,7 @@ return require('packer').startup(function (use)
 			wk.register({
 				c = {
 					name = "+config",
-					m = { ':e ~/.config/nvim/init.lua', 'main config' },
+					m = { ':e ~/.config/nvim/init.lua<CR>', 'main config' },
 					s = "snippets"
 				},
 				f = {
@@ -133,7 +133,8 @@ return require('packer').startup(function (use)
 					e = "ez swap window",
 					t = "tagbar",
 					u = "undotree",
-					p = "tree sitter"
+					p = "tree sitter",
+					d = "drawing"
 				},
 				t = {
 					name = "+text",
@@ -222,6 +223,7 @@ return require('packer').startup(function (use)
 	use {'wfxr/minimap.vim', cmd = {'Minimap', 'MinimapToggle'} }
 	use 'kana/vim-metarw' -- fake paths 
 	keymap("n", "<leader>st", ":TagbarToggle<CR>", opts)
+	g.tagbar_position = "rightbelow"
 	use {'majutsushi/tagbar', opt = true, cmd = {'Tagbar', 'TagbarToggle'} }
 	keymap("n", "<leader>su", ":UndotreeToggle<CR>", opts)
 	use {'mbbill/undotree', opt = true, cmd = {'UndoTree', 'UndotreeToggle' } }
@@ -432,6 +434,8 @@ return require('packer').startup(function (use)
 	g["pandoc#filetypes#pandoc_markdown"] = 0
 	use { 'vim-pandoc/vim-pandoc', ft = {'markdown'} }
 	use { 'vim-pandoc/vim-pandoc-syntax', ft = {'markdown'} }
+	use { 'skywind3000/asyncrun.vim', ft =  {'markdown', 'markdown.pandoc'}, cmd = 'StartMdPreview'}
+	use {'conornewton/vim-pandoc-markdown-preview', ft =  {'markdown', 'markdown.pandoc'}, cmd = 'StartMdPreview'}
 
 	-- treesitter
 	use {
@@ -479,22 +483,19 @@ return require('packer').startup(function (use)
 	run("command! Emojify s/:\\([^:]\\+\\):/\\=emoji#for(submatch(1), submatch(0))/g")
 	keymap("n", "<leader>te", ":Emojify<CR>", opts)
 	use {'junegunn/vim-emoji', opt = true, cmd = { 'Emojify' }}
+	g.unicoder_cancel_normal = 1
+	g.unicoder_cancel_insert = 1
+	g.unicoder_cancel_visual = 1
+	keymap("n", "<C-y>", ":call unicoder#start(0)<CR>", opts)
+	keymap("n", "<C-y>", "<Esc>:call unicoder#start(1)<CR>", opts)
+	keymap("n", "<C-y>", ":<C-u>call unicoder#selection()<CR>", opts)
 	use {'joom/latex-unicoder.vim'}
 
 --[[
-  ;
-  
-
   'dense-analysis/ale';
-
   'glepnir/galaxyline.nvim';
-  'nvim-lua/popup.nvim';
-
-  -- filetypes
-  {'skywind3000/asyncrun.vim'; ['for'] =  {'markdown', 'markdown.pandoc'}, on = 'StartMdPreview'};
-  {'conornewton/vim-pandoc-markdown-preview'; ['for'] =  {'markdown', 'markdown.pandoc'}, on = 'StartMdPreview'};
-  'skywind3000/vim-quickui';
-
-  ;
---]]
+  --]]
+	g.quickui_border_style = 2
+	g.quickui_color_scheme = 'gruvbox'
+	use 'skywind3000/vim-quickui';
 end)
