@@ -80,7 +80,8 @@ return require('packer').startup(function (use)
 			require("bufferline").setup{
 				options = {
 					numbers = "both",
-					number_style = { "subscript" }
+					number_style = { "subscript" },
+					diagnostics = "nvim_lsp"
 				}
 			}
 		end

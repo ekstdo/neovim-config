@@ -28,7 +28,8 @@ M.colors = {
 	lsp_errors    = '%#LSPErrors#',
 	lsp_warnings  = '%#LSPWarnings#',
 	lsp_info      = '%#LSPInfo#',
-	lsp_hints     = '%#LSPHints#'
+	lsp_hints     = '%#LSPHints#',
+	bg_alt        = '%#BGAlt#'
 }
 
 M.trunc_width = setmetatable({
@@ -135,8 +136,12 @@ M.get_lsp_diagnostic = function(self)
 	if self:is_truncated(self.trunc_width.diagnostic) then
 		return ''
 	else
+		local errors = colors.lsp_errors .. ":" .. tostring(result.errors)
+		local warnings = colors.lsp_warnings .. " :" .. tostring(result.warnings)
+		local info = colors.lsp_info .. " :" .. tostring(result.info)
+		local hints = colors.lsp_hints .. " :" .. tostring(result.hints)
 		return
-			colors.active .. "| " .. colors.lsp_errors .. ":" .. tostring(result.errors) .. colors.lsp_warnings .. " :" .. tostring(result.warnings) .. colors.lsp_info .. " :" .. tostring(result.info) .. colors.lsp_hints .. " :" .. tostring(result.hints) .. " "
+			colors.active .. "| " .. (result.errors > 0 and errors or "") .. (result.warnings > 0 and warnings or "") .. (result.info > 0 and info or "") .. (result.hints > 0 and hints or "") .. " "
 	end
 end
 
@@ -160,6 +165,7 @@ function update_colors()
 	  {'ModeAlt', { bg = Fg_col1, fg = Fg_col2 }},
 	  {'Git', { bg = Fg_col2, fg = bright_font }},
 	  {'GitAlt', { bg = universal_bg, fg = Fg_col2 }},
+	  {'BGAlt', {bg = universal_bg_dark, fg = universal_bg}},
 
 	  {'Filetype', { bg = '#504945', fg = universal_bg }},
 	  {'Filename', { bg = '#504945', fg = universal_bg }},
@@ -194,7 +200,8 @@ M.set_active = function(self)
 	local mode = colors.mode .. self:get_current_mode() .. colors.mode_alt .. self.separators[active_sep][1] .. colors.active
 	local git = colors.git .. '  %{FugitiveHead()} ' .. colors.git_alt .. self.separators.arrow[1]
 	local position = colors.line_col .. "  %l,↔%c%V%, %P "
-	return colors.active .. mode .. git .. colors.active .. ' %f' .. ' %h%m%r%w' .. colors.git_alt .. self:get_filetype() .. self:get_lsp_diagnostic() .. '%=' .. '%=' .. position
+	local file =  colors.active .. ' %f' .. ' %h%m%r%w' .. colors.git_alt .. self:get_filetype()
+	return colors.active .. mode .. git .. file .. self:get_lsp_diagnostic() .. colors.bg_alt ..  self.separators.arrow[1] .. '%=' .. colors.inactive .. require'nvim-navic'.get_location() .. '%=' .. position
 end
 
 M.set_inactive = function(self)
