@@ -2,13 +2,11 @@ global !p
 def isMath():
     # DEBUGGING
     synstack = vim.eval("map(synstack(line('.'), col('.') - (col('.')>=2 ? 1 : 0)), {i,v -> synIDattr(v, 'name')})")
-    print("synstack: " + str(synstack))
-    syntaxgroup = vim.eval("get(reverse(map(synstack(line('.'), col('.') - (col('.')>=2 ? 1 : 0)), {i,v -> synIDattr(v, 'name')})), 0, '')")
-    #print("syntaxgroup (rev): "+ syntaxgroup)
     # MODIFICATION reverse() is not necessary since pandocLaTeXInlineMath is the outer group anyway.
     syntaxgroup = vim.eval("get(map(synstack(line('.'), col('.') - (col('.')>=2 ? 1 : 0)), {i,v -> synIDattr(v, 'name')}), 0, '')")
-    print("syntaxgroup: "+ syntaxgroup, int(vim.eval("'"+syntaxgroup+"' =~# 'pandocLaTeXInlineMath'")))
-    return int(vim.eval("'"+syntaxgroup+"' =~# '\\(pandocLaTeXInlineMath\\|pandocLaTeXMathBlock\\)'"))
+    result = int(vim.eval("'"+syntaxgroup+"' =~# '\\(pandocLaTeXInlineMath\\|pandocLaTeXMathBlock\\)'"))
+    print("synstack: " + str(synstack), "syntaxgroup: "+ syntaxgroup, result)
+    return result
 endglobal
 
 context "isMath()"
@@ -87,6 +85,27 @@ context "isMath()"
 snippet norm "Norm" iA
 \|$1\|$0
 endsnippet
+
+context "isMath()"
+snippet <( "predecessor" iA
+\\prec
+endsnippet
+
+context "isMath()"
+snippet <=( "predecessor or equals" iA
+\\preceq
+endsnippet
+
+context "isMath()"
+snippet )> "successor" iA
+\\succ
+endsnippet
+
+context "isMath()"
+snippet )=> "successor or equals" iA
+\\succeq
+endsnippet
+
 
 context "isMath()"
 snippet >> "much greater" iA
@@ -195,7 +214,7 @@ endsnippet
 context "isMath()"
 snippet cases "Zweige" iA
 \begin{cases}
-	$0
+    $0
 \end{cases}
 endsnippet
 
@@ -346,7 +365,7 @@ snippet zint "signed integers" iA
 endsnippet
 
 context "isMath()"
-snippet int "signed integers" iA
+snippet int "integral" iA
 \int_{${1:0}}^{${2:\infty}}$0 d${3:x}
 endsnippet
 
@@ -367,7 +386,7 @@ endsnippet
 
 snippet beg "begin{} / end{}" bA
 \begin{$1}
-	$0
+    $0
 \end{$1}
 endsnippet
 
@@ -497,8 +516,8 @@ endsnippet
 snippet graph "graph" w
 \`\`\`{.graphviz}
 digraph G {
-	$1 -> $2;
-	$3
+    $1 -> $2;
+    $3
 } $0
 \`\`\`
 endsnippet
@@ -506,3 +525,4 @@ endsnippet
 snippet nrt "nth root" iA
 \sqrt[${1:n}]{$2}$0
 endsnippet
+

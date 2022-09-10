@@ -99,7 +99,7 @@ return require('packer').startup(function (use)
 			wk.register({
 				c = {
 					name = "+config",
-					m = { ':e ~/.config/nvim/init.lua<CR>', 'main config' },
+					m = 'main config',
 					s = "snippets"
 				},
 				f = {
@@ -242,6 +242,8 @@ return require('packer').startup(function (use)
 			keymap('n', ']d', vim.diagnostic.goto_next, opts)
 			keymap('n', '<space>q', vim.diagnostic.setloclist, opts)
 
+			local navic = require("nvim-navic")
+
 			local on_attach = function(client, bufnr)
 				-- Enable completion triggered by <c-x><c-o>
 				vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
@@ -261,6 +263,7 @@ return require('packer').startup(function (use)
 				keymap('n', '<space>D', vim.lsp.buf.type_definition, bufopts)
 				keymap('n', '<space>jr', vim.lsp.buf.references, bufopts)
 				keymap('n', '<space>lf', vim.lsp.buf.formatting, bufopts)
+				navic.attach(client, bufnr)
 			end
 
 			local lsp_flags = {}
@@ -308,9 +311,30 @@ return require('packer').startup(function (use)
 					},
 				},
 			}
+			capabilities.textDocument.completion.completionItem.snippetSupport = true
+
+			lspconfig.emmet_ls.setup({
+				on_attach = on_attach,
+				capabilities = capabilities,
+				filetypes = { 'html', 'typescriptreact', 'javascriptreact', 'css', 'sass', 'scss', 'less' },
+				init_options = {
+					html = {
+						options = {
+							-- For possible options, see: https://github.com/emmetio/emmet/blob/master/src/config.ts#L79-L267
+							["bem.enabled"] = true,
+						},
+					},
+				}
+			})
+
 
 		end
 	}
+	use {
+		"SmiteshP/nvim-navic",
+		requires = "neovim/nvim-lspconfig"
+	}
+	use { 'RishabhRD/nvim-lsputils' }
 	use {
 		"glepnir/lspsaga.nvim",
 		branch = "main",
@@ -341,6 +365,11 @@ return require('packer').startup(function (use)
 	use { 'hrsh7th/cmp-cmdline' }
 	use { 'f3fora/cmp-spell' }
 	use { 'quangnguyen30192/cmp-nvim-ultisnips' }
+	use { 'hrsh7th/cmp-nvim-lsp-signature-help' }
+	use {
+		"windwp/nvim-autopairs",
+		config = function() require("nvim-autopairs").setup {} end
+	}
 	use {'tzachar/cmp-tabnine', run='./install.sh', requires = { 'hrsh7th/nvim-cmp', 'onsails/lspkind.nvim' }
 		, config = function()
 
@@ -348,10 +377,14 @@ return require('packer').startup(function (use)
 			lspkind.init()
 			local cmp = require'cmp'
 			local select_opts = {behavior = cmp.SelectBehavior.Select}
+			local cmp_autopairs = require('nvim-autopairs.completion.cmp')
 
 			vim.opt.spell = true
 			vim.opt.spelllang = { 'en_us', 'de_de' }
 			cmp.setup {
+				completion = {
+					keyword_pattern = [=[[^[:blank:]]*]=]
+				},
 				snippet = {
 					expand = function(args)
 						 vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
@@ -360,9 +393,11 @@ return require('packer').startup(function (use)
 				mapping = {
 					['<S-Tab>'] = cmp.mapping.select_prev_item(select_opts),
 					['<Tab>'] = cmp.mapping.select_next_item(select_opts),
-					['<CR>'] = cmp.mapping.confirm({ select = true })
+					['<CR>'] = cmp.mapping.confirm({ select = true }),
+					['<esc>'] = cmp.mapping.abort()
 				},
 				sources = cmp.config.sources({
+						{ name = 'nvim_lsp_signature_help' },
 						{ name = 'path' },
 						{ name = 'nvim_lsp', keyword_length = 3 },
 						{ name = 'ultisnips' },
@@ -373,9 +408,13 @@ return require('packer').startup(function (use)
 				}
 
 			}
+
+			cmp.event:on(
+				'confirm_done',
+				cmp_autopairs.on_confirm_done()
+			)
 		end
 	}
-
 	-- use {'neoclide/coc.nvim'; branch = 'release'}
 	--
 	-- a memorial of the past
@@ -447,6 +486,9 @@ return require('packer').startup(function (use)
 					enable = true,
 					disable = {'bash'} -- please disable bash until I figure #1 out
 				},
+				autotag = {
+					enable = true,
+				},
 				textsubjects = {
 					enable = true,
 					prev_selection = ',', -- (Optional) keymap to select the previous selection
@@ -465,6 +507,7 @@ return require('packer').startup(function (use)
 	use { 'romgrk/nvim-treesitter-context', requires = {'nvim-treesitter/nvim-treesitter'} }
 	use { 'RRethy/nvim-treesitter-textsubjects', requires = {'nvim-treesitter/nvim-treesitter'} }
 	use { 'nvim-treesitter/playground', opt= true, cmd = {'TSPlaygroundToggle'}, requires = {'nvim-treesitter/nvim-treesitter'} }
+	use { 'windwp/nvim-ts-autotag' }
 
 	-- fun
 	use { 'potamides/pantran.nvim'
@@ -493,7 +536,6 @@ return require('packer').startup(function (use)
 
 --[[
   'dense-analysis/ale';
-  'glepnir/galaxyline.nvim';
   --]]
 	g.quickui_border_style = 2
 	g.quickui_color_scheme = 'gruvbox'

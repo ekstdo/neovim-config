@@ -75,6 +75,7 @@ ss:<C-w>>
 <space>tw::set wrap!<CR>
 <space>ss::sp<CR><C-w><Down>:term<CR>
 <space>sd::Drawing
+<space>cm::e ~/.config/nvim/init.lua<CR>
 <C-a>:<Esc>ggVG<CR>
 <leader>tw::set wrap!<CR>
 <leader>sl::set number!<CR>
@@ -112,6 +113,5 @@ v:p:let @"=@0<CR>]]
 colonIter(function (from, to) vim.api.nvim_set_keymap('', from, to, { noremap = true }) end, str)
 colonIter(function (from, to) vim.api.nvim_set_keymap('i', from, to, { noremap = true }) end, iStr)
 colonIter(function (from, to) vim.api.nvim_set_keymap('v', from, to, { noremap = true }) end, vStr)
-colonIter(function (from, to) vim.api.nvim_set_keymap('i', from, to, { noremap = true, expr = true }) end, iExprStr)
 
 

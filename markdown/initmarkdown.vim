@@ -396,30 +396,6 @@ if !exists("g:tex_no_math")
    endif
  endfun
 
- " Standard Math Zones: {{{2
- call TexNewMathZone("A","displaymath",1)
- call TexNewMathZone("B","eqnarray",1)
- call TexNewMathZone("C","equation",1)
- call TexNewMathZone("D","math",1)
-
- " Inline Math Zones: {{{2
- if s:tex_fast =~# 'M'
-  if has("conceal") && &enc == 'utf-8' && s:tex_conceal =~# 'd'
-   syn region texMathZoneV	matchgroup=Delimiter start="\\("			matchgroup=Delimiter	end="\\)\|%stopzone\>"			keepend concealends contains=@texMathZoneGroup
-   syn region texMathZoneW	matchgroup=Delimiter start="\\\["			matchgroup=Delimiter	end="\\]\|%stopzone\>"			keepend concealends contains=@texMathZoneGroup
-   syn region texMathZoneX	matchgroup=Delimiter start="\$" skip="\\\\\|\\\$"	matchgroup=Delimiter	end="\$"	end="%stopzone\>"		concealends contains=@texMathZoneGroup
-   syn region texMathZoneY	matchgroup=Delimiter start="\$\$"			matchgroup=Delimiter	end="\$\$"	end="%stopzone\>"	keepend concealends contains=@texMathZoneGroup
-  else
-   syn region texMathZoneV	matchgroup=Delimiter start="\\("			matchgroup=Delimiter	end="\\)\|%stopzone\>"			keepend contains=@texMathZoneGroup
-   syn region texMathZoneW	matchgroup=Delimiter start="\\\["			matchgroup=Delimiter	end="\\]\|%stopzone\>"			keepend contains=@texMathZoneGroup
-   syn region texMathZoneX	matchgroup=Delimiter start="\$" skip="\%(\\\\\)*\\\$"	matchgroup=Delimiter	end="\$"	end="%stopzone\>"		contains=@texMathZoneGroup
-   syn region texMathZoneY	matchgroup=Delimiter start="\$\$"			matchgroup=Delimiter	end="\$\$"	end="%stopzone\>"	keepend	contains=@texMathZoneGroup
-  endif
-  syn region texMathZoneZ	matchgroup=texStatement start="\\ensuremath\s*{"	matchgroup=texStatement	end="}"		end="%stopzone\>"	contains=@texMathZoneGroup
- endif
-
- syn match texMathOper		"[_^=]" contained
-
  " Text Inside Math Zones: {{{2
  if s:tex_fast =~# 'M'
   if !exists("g:tex_nospell") || !g:tex_nospell
@@ -650,25 +626,7 @@ if !exists("skip_tex_syntax_inits")
   hi def link texInputFileOpt	texCmdArgs
   hi def link texInputCurlies	texDelimiter
   hi def link texLigature	texSpecialChar
-  "if !exists("g:tex_no_math")
-   "hi def link texMathDelimSet1	texMathDelim
-   "hi def link texMathDelimSet2	texMathDelim
-   "hi def link texMathDelimKey	texMathDelim
-   "hi def link texMathMatcher	texMath
-   "hi def link texAccent	texStatement
-   "hi def link texGreek		texStatement
-   "hi def link texSuperscript	texStatement
-   "hi def link texSubscript	texStatement
-   "hi def link texSuperscripts	texSuperscript
-   "hi def link texSubscripts	texSubscript
-   "hi def link texMathSymbol	texStatement
-   "hi def link texMathZoneV	texMath
-   "hi def link texMathZoneW	texMath
-   "hi def link texMathZoneX	texMath
-   "hi def link texMathZoneY	texMath
-   "hi def link texMathZoneV	texMath
-   "hi def link texMathZoneZ	texMath
-  "endif
+
   hi def link texBeginEnd	texCmdName
   hi def link texBeginEndName	texSection
   hi def link texSpaceCode	texStatement
@@ -1681,3 +1639,5 @@ inoreabbrev <expr> __
           \ '<c-o>:silent! TableModeDisable<cr>' : '__'
 
 exec "source " . fnamemodify(expand("$MYVIMRC"), ":h") . "/markdown/corrections.vim"
+
+set ft=markdown.pandoc
