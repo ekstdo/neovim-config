@@ -115,13 +115,17 @@ M.get_git_status = function(self)
 		or ''
 end
 
-M.get_filetype = function()
+M.get_filetype = function(self)
 	local file_name, file_ext = fn.expand("%:t"), fn.expand("%:e")
 	local icon = require'nvim-web-devicons'.get_icon(file_name, file_ext, { default = true })
 	local filetype = vim.bo.filetype
 
 	if filetype == '' then return '' end
-	return string.format(' %s %s ', icon, filetype):lower()
+	if self:is_truncated(self.trunc_width.mode) then
+		return string.format('%s', icon) 
+	else 
+		return string.format(' %s %s ', icon, filetype):lower()
+	end
 end
 
 M.get_lsp_diagnostic = function(self)
@@ -198,10 +202,11 @@ end
 M.set_active = function(self)
 	local colors = self.colors
 	local mode = colors.mode .. self:get_current_mode() .. colors.mode_alt .. self.separators[active_sep][1] .. colors.active
-	local git = colors.git .. '  %{FugitiveHead()} ' .. colors.git_alt .. self.separators.arrow[1]
+	local git = colors.git .. '%<  %{FugitiveHead()} ' .. colors.git_alt .. self.separators.arrow[1]
 	local position = colors.line_col .. "  %l,↔%c%V%, %P "
 	local file =  colors.active .. ' %f' .. ' %h%m%r%w' .. colors.git_alt .. self:get_filetype()
-	return colors.active .. mode .. git .. file .. self:get_lsp_diagnostic() .. colors.bg_alt ..  self.separators.arrow[1] .. '%=' .. colors.inactive .. require'nvim-navic'.get_location() .. '%=' .. position
+	local location = self:is_truncated(self.trunc_width.diagnostic) and "" or require'nvim-navic'.get_location()
+	return colors.active .. mode .. git .. file .. self:get_lsp_diagnostic() .. colors.bg_alt ..  self.separators.arrow[1] .. '%=' .. colors.inactive .. location .. '%=' .. position
 end
 
 M.set_inactive = function(self)
