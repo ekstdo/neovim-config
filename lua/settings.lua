@@ -16,6 +16,7 @@ g.maplocalleader = ','
 set.timeoutlen = 300
 set.hidden = true
 set.cmdheight = 2
+set.showmode = false
 set.shortmess = set.shortmess .. 'c'
 
 set.termguicolors = true
