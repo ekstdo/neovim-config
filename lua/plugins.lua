@@ -214,8 +214,8 @@ return require('packer').startup(function (use)
 	use { 'wesQ3/vim-windowswap'
 		, config = function()
 			g.windowswap_map_keys = 0
-			keymap("n", "<leader>sc", ":call WindowSwap#MarkWindowSwap()<CR>", opts)
-			keymap("n", "<leader>sv", ":call WindowSwap#DoWindowSwap()<CR>", opts)
+			keymap("n", BINDINGS == "colemak" and "<leader>sc" or "<leader>sy", ":call WindowSwap#MarkWindowSwap()<CR>", opts)
+			keymap("n", BINDINGS == "colemak" and "<leader>sv" or "<leader>sp", ":call WindowSwap#DoWindowSwap()<CR>", opts)
 			keymap("n", "<leader>se", ":call WindowSwap#EasyWindowSwap()<CR>", opts)
 		end
 	}
@@ -352,7 +352,7 @@ return require('packer').startup(function (use)
 			keymap("n", "gh", "<cmd>Lspsaga lsp_finder<CR>", opts)
 			keymap("n", "gd", "<cmd>Lspsaga preview_definition<CR>", opts)
 			keymap("n", "<space>lr", "<cmd>Lspsaga rename<CR>", opts)
-			keymap("n", "K", "<cmd>Lspsaga hover_doc<CR>", opts)
+			keymap("n", BINDINGS == "colemak" and "N" or "K", "<cmd>Lspsaga hover_doc<CR>", opts)
 		end,
 	}
 	use { 'mfussenegger/nvim-jdtls', ft = {'java'}, config = function()
@@ -421,12 +421,14 @@ return require('packer').startup(function (use)
 	-- a memorial of the past
 
 	-- LSP related
-	use { 'puremourning/vimspector'
-		, config = function()
-			g.vimspector_enable_mappings = 'HUMAN'
-		end
-	}
+	-- use { 'puremourning/vimspector'
+	-- 	, config = function()
+	-- 		g.vimspector_enable_mappings = 'HUMAN'
+	-- 	end
+	-- }
 	use 'mfussenegger/nvim-dap'
+
+	use { 'theHamsta/nvim-dap-virtual-text', requires = {'mfussenegger/nvim-dap'}}
 
 
 	-- file types
@@ -452,6 +454,7 @@ return require('packer').startup(function (use)
 	use {'neoclide/vim-jsx-improve',    ft = {'javascript', 'jsx', 'javascript.jsx'} }
 	use { 'kmonad/kmonad-vim',          ft = {'kbd'} } -- kmonad config
 	use 'nvim-orgmode/orgmode'
+	use { 'mfussenegger/nvim-dap-python', ft = {'python'}, requires = {'mfussenegger/nvim-dap'}}
 
 	-- markdown
 	g.table_mode_map_prefix = '<space>T'

@@ -213,6 +213,10 @@ M.set_inactive = function(self)
 	return self.colors.inactive .. '%= %F %='
 end
 
+M.set_explorer = function(self)
+	return "%= Filetree %="
+end
+
 Statusline = setmetatable(M, {
 	__call = function(statusline, mode)
 		if mode == "active" then

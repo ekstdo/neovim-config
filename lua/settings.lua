@@ -1,5 +1,7 @@
 require "utils"
 
+BINDINGS = "colemak" -- can be qwerty or colemak
+
 set.mouse = "a"
 set.clipboard = "unnamedplus"
 

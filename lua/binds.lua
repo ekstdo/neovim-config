@@ -1,6 +1,6 @@
 require "utils"
 
-str=interp([[-:o
+str=interp((BINDINGS == "colemak" and [[-:o
 o:w
 w:t
 t:c
@@ -41,8 +41,14 @@ V:P
 P:,
 ,:N
 N:K
-K:V,
-<C-BS>:X<Esc>lbce
+K:V
+<leader>wu:<c-w>k
+<leader>we:<c-w>j
+<leader>wn:<c-w>h
+<leader>ww:<c-w><Up>
+<leader>wa:<c-w><Left>
+<leader>ws:<c-w><Right>
+<leader>wr:<c-w><Down>]] or "") .. [[<C-BS>:X<Esc>lbce
 <up>:gk
 <down>:gj
 <Home>:g0
@@ -62,13 +68,6 @@ ss:<C-w>>
 <leader>w-:<C-w>s
 <leader>w|:<C-w>v
 <leader>wi:<c-w>l
-<leader>wu:<c-w>k
-<leader>we:<c-w>j
-<leader>wn:<c-w>h
-<leader>ww:<c-w><Up>
-<leader>wa:<c-w><Left>
-<leader>ws:<c-w><Right>
-<leader>wr:<c-w><Down>
 <C-down>:<Plug>newCursor
 <space>tts::set tabstop=2 shiftwidth=2 expandtab | retab
 <space>tde::v/./d<CR>
