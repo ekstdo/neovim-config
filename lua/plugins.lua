@@ -239,8 +239,8 @@ return require('packer').startup(function (use)
 	use { 'neovim/nvim-lspconfig'
 		, config = function()
 			keymap('n', '<space>e', vim.diagnostic.open_float, opts)
-			keymap('n', '[d', vim.diagnostic.goto_prev, opts)
-			keymap('n', ']d', vim.diagnostic.goto_next, opts)
+			keymap('n', '<space>jp', vim.diagnostic.goto_prev, opts)
+			keymap('n', '<space>jn', vim.diagnostic.goto_next, opts)
 			keymap('n', '<space>q', vim.diagnostic.setloclist, opts)
 
 			local navic = require("nvim-navic")
@@ -265,6 +265,21 @@ return require('packer').startup(function (use)
 				keymap('n', '<space>jr', vim.lsp.buf.references, bufopts)
 				keymap('n', '<space>lf', vim.lsp.buf.formatting, bufopts)
 				navic.attach(client, bufnr)
+
+				vim.api.nvim_create_autocmd("CursorHold", {
+				buffer = bufnr,
+				callback = function()
+					local opts = {
+						focusable = false,
+						close_events = { "BufLeave", "CursorMoved", "InsertEnter", "FocusLost" },
+						border = 'rounded',
+						source = 'always',
+						prefix = ' ',
+						scope = 'cursor',
+					}
+					vim.diagnostic.open_float(nil, opts)
+				end
+			})
 			end
 
 			local lsp_flags = {}
@@ -286,10 +301,8 @@ return require('packer').startup(function (use)
 				flags = lsp_flags,
 				on_attach = on_attach,
 			}
-			lspconfig['asm_lsp'].setup{
-				flags = lsp_flags,
-				on_attach = on_attach,
-			}
+			lspconfig.hls.setup{ flags = lsp_flags, on_attach = on_attach }
+			lspconfig['asm_lsp'].setup{ flags = lsp_flags, on_attach = on_attach }
 			lspconfig.sumneko_lua.setup {
 				settings = {
 					Lua = {
@@ -328,6 +341,18 @@ return require('packer').startup(function (use)
 				}
 			})
 
+			vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
+				vim.lsp.diagnostic.on_publish_diagnostics,
+				{
+					virtual_text = false,
+					signs = true,
+					update_in_insert = false,
+					underline = true,
+				}
+			) -- removes virtual text 
+
+
+
 
 		end
 	}
@@ -356,7 +381,7 @@ return require('packer').startup(function (use)
 		end,
 	}
 	use { 'mfussenegger/nvim-jdtls', ft = {'java'}, config = function()
-			
+
 		end
 	}
 	use { 'hrsh7th/cmp-nvim-lsp' }
@@ -367,6 +392,22 @@ return require('packer').startup(function (use)
 	use { 'f3fora/cmp-spell' }
 	use { 'quangnguyen30192/cmp-nvim-ultisnips' }
 	use { 'hrsh7th/cmp-nvim-lsp-signature-help' }
+	use { 'simrat39/rust-tools.nvim', config =  function() 
+			local rt = require("rust-tools")
+
+			rt.setup({
+				server = {
+					on_attach = function(_, bufnr)
+						local bufopts = { noremap=true, silent=true, buffer=bufnr }
+						-- Hover actions
+						vim.keymap.set("n", "<C-space>", rt.hover_actions.hover_actions, bufopts)
+						-- Code action groups
+						vim.keymap.set("n", "<Leader>a", rt.code_action_group.code_action_group, bufopts)
+					end,
+				},
+			})
+		end
+	}
 	use {
 		"windwp/nvim-autopairs",
 		config = function() require("nvim-autopairs").setup {} end
@@ -384,7 +425,6 @@ return require('packer').startup(function (use)
 			vim.opt.spelllang = { 'en_us', 'de_de' }
 			cmp.setup {
 				completion = {
-					keyword_pattern = [=[[^[:blank:]]*]=]
 				},
 				snippet = {
 					expand = function(args)
@@ -400,12 +440,15 @@ return require('packer').startup(function (use)
 				sources = cmp.config.sources({
 						{ name = 'nvim_lsp_signature_help' },
 						{ name = 'path' },
-						{ name = 'nvim_lsp', keyword_length = 3 },
+						{ name = 'nvim_lsp', keyword_length = 2 },
 						{ name = 'ultisnips' },
 						{ name = 'cmp_tabnine' },
 				}, {{ name = 'buffer', keyword_length = 3 }, { name = 'spell' }}),
 				formatting = {
 					format = lspkind.cmp_format({})
+				},
+				experimental = {
+					ghost_text = true
 				}
 
 			}
@@ -429,6 +472,21 @@ return require('packer').startup(function (use)
 	use 'mfussenegger/nvim-dap'
 
 	use { 'theHamsta/nvim-dap-virtual-text', requires = {'mfussenegger/nvim-dap'}}
+	use { 'rcarriga/nvim-dap-ui', requires = {'mfussenegger/nvim-dap'}, config = function ()
+		local dap, dapui = require("dap"), require("dapui")
+		dapui.setup()
+		dap.listeners.after.event_initialized["dapui_config"] = function()
+			dapui.open()
+		end
+		dap.listeners.before.event_terminated["dapui_config"] = function()
+			dapui.close()
+		end
+		dap.listeners.before.event_exited["dapui_config"] = function()
+			dapui.close()
+		end
+
+		keymap("n", BINDINGS == "colemak" and"<M-n>" or "<M-k>", "<Cmd>lua require(\"dapui\").eval()<CR>", opts)
+	end}
 
 
 	-- file types

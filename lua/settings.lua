@@ -28,6 +28,8 @@ set.conceallevel = 2
 
 vim.opt.completeopt = {'menu', 'menuone', 'noselect'}
 
+set.updatetime = 250
+
 g.md_args = "--template eisvogel --from markdown+grid_tables --listings --filter pandoc-imagine --pdf-engine=xelatex" -- markdown previewer
 g.tagbar_type_elixir = {
      ctagstype = 'elixir',

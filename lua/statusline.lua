@@ -144,8 +144,9 @@ M.get_lsp_diagnostic = function(self)
 		local warnings = colors.lsp_warnings .. " :" .. tostring(result.warnings)
 		local info = colors.lsp_info .. " :" .. tostring(result.info)
 		local hints = colors.lsp_hints .. " :" .. tostring(result.hints)
+		local any = result.errors + result.warnings + result.info + result.hints
 		return
-			colors.active .. "| " .. (result.errors > 0 and errors or "") .. (result.warnings > 0 and warnings or "") .. (result.info > 0 and info or "") .. (result.hints > 0 and hints or "") .. " "
+			colors.active .. (any > 0 and "| " or "") .. (result.errors > 0 and errors or "") .. (result.warnings > 0 and warnings or "") .. (result.info > 0 and info or "") .. (result.hints > 0 and hints or "") .. " "
 	end
 end
 
@@ -204,7 +205,7 @@ M.set_active = function(self)
 	local mode = colors.mode .. self:get_current_mode() .. colors.mode_alt .. self.separators[active_sep][1] .. colors.active
 	local git = colors.git .. '%<  %{FugitiveHead()} ' .. colors.git_alt .. self.separators.arrow[1]
 	local position = colors.line_col .. "  %l,↔%c%V%, %P "
-	local file =  colors.active .. ' %f' .. ' %h%m%r%w' .. colors.git_alt .. self:get_filetype()
+	local file =  colors.active .. ' %f' .. ' %h%m%r%w ' .. colors.git_alt .. self:get_filetype()
 	local location = self:is_truncated(self.trunc_width.diagnostic) and "" or require'nvim-navic'.get_location()
 	return colors.active .. mode .. git .. file .. self:get_lsp_diagnostic() .. colors.bg_alt ..  self.separators.arrow[1] .. '%=' .. colors.inactive .. location .. '%=' .. position
 end
