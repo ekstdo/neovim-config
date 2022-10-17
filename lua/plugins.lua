@@ -283,10 +283,10 @@ return require('packer').startup(function (use)
 			end
 
 			local lsp_flags = {}
-			local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
+			local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
 			local lspconfig = require('lspconfig')
-			lspconfig['pyright'].setup{   on_attach = on_attach, flags = lsp_flags, capabilities = capabilities   }
+			lspconfig['pylsp'].setup{   on_attach = on_attach, flags = lsp_flags  }
 			lspconfig['tsserver'].setup{  on_attach = on_attach, flags = lsp_flags   }
 			lspconfig['elixirls'].setup{  cmd = { "elixir-ls" }, on_attach = on_attach   }
 			lspconfig['clangd'].setup{    flags = lsp_flags, on_attach = on_attach   }
@@ -392,7 +392,8 @@ return require('packer').startup(function (use)
 	use { 'f3fora/cmp-spell' }
 	use { 'quangnguyen30192/cmp-nvim-ultisnips' }
 	use { 'hrsh7th/cmp-nvim-lsp-signature-help' }
-	use { 'simrat39/rust-tools.nvim', config =  function() 
+	use { 'simrat39/rust-tools.nvim',
+			after = "nvim-lspconfig", config =  function() 
 			local rt = require("rust-tools")
 
 			rt.setup({
