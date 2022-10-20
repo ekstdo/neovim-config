@@ -536,7 +536,9 @@ return require('packer').startup(function (use)
 	g["pandoc#filetypes#pandoc_markdown"] = 0
 	use { 'vim-pandoc/vim-pandoc', ft = {'markdown'} }
 	use { 'vim-pandoc/vim-pandoc-syntax', ft = {'markdown'} }
-	use { 'skywind3000/asyncrun.vim', ft =  {'markdown', 'markdown.pandoc'}, cmd = 'StartMdPreview'}
+	use { 'skywind3000/asyncrun.vim', ft =  {'markdown', 'markdown.pandoc'}, cmd = 'StartMdPreview', config = function() 
+			keymap("n", "<leader>pm", ":StartMdPreview<CR>", opts)
+		end }
 	use {'conornewton/vim-pandoc-markdown-preview', ft =  {'markdown', 'markdown.pandoc'}, cmd = 'StartMdPreview'}
 
 	-- treesitter
