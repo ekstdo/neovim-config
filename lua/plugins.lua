@@ -189,6 +189,14 @@ return require('packer').startup(function (use)
 			keymap("n", "<leader>nb", ":Telescope buffers<CR>", opts)
 			keymap("n", "<leader>ns", ":Telescope live_grep<CR>", opts)
 			keymap("n", "<leader>nh", ":Telescope help_tags<CR>", opts)
+
+			local path = require "plenary.path"
+
+			CONFIG_FILE_PATH = path:new("$MYVIMRC"):expand()
+
+			CURRENT_CONFIG_FOLDER = path:new(CONFIG_FILE_PATH):parent().filename
+
+
 		end
 	}
 	use { 'nvim-telescope/telescope-bibtex.nvim'
@@ -375,10 +383,21 @@ return require('packer').startup(function (use)
 			keymap('n', '<leader>la', "<cmd>Lspsaga code_action<CR>", opts)
 			keymap('v', "<leader>la", "<cmd>Lspsaga range_code_action<CR>", opts)
 			keymap("n", "gh", "<cmd>Lspsaga lsp_finder<CR>", opts)
-			keymap("n", "gd", "<cmd>Lspsaga preview_definition<CR>", opts)
+			keymap("n", "gd", "<cmd>Lspsaga peek_definition<CR>", opts)
 			keymap("n", "<space>lr", "<cmd>Lspsaga rename<CR>", opts)
 			keymap("n", BINDINGS == "colemak" and "N" or "K", "<cmd>Lspsaga hover_doc<CR>", opts)
 		end,
+	}
+	use {
+		"folke/trouble.nvim",
+		requires = "kyazdani42/nvim-web-devicons",
+		config = function()
+		require("trouble").setup {
+			-- your configuration comes here
+			-- or leave it empty to use the default settings
+			-- refer to the configuration section below
+		}
+		end
 	}
 	use { 'mfussenegger/nvim-jdtls', ft = {'java'}, config = function()
 
@@ -435,8 +454,8 @@ return require('packer').startup(function (use)
 				mapping = {
 					['<S-Tab>'] = cmp.mapping.select_prev_item(select_opts),
 					['<Tab>'] = cmp.mapping.select_next_item(select_opts),
-					['<CR>'] = cmp.mapping.confirm({ select = true }),
-					['<esc>'] = cmp.mapping.abort()
+					['<CR>'] = cmp.mapping.confirm({ select = false }),
+					-- ['<esc>'] = cmp.mapping.abort()
 				},
 				sources = cmp.config.sources({
 						{ name = 'nvim_lsp_signature_help' },
@@ -605,4 +624,8 @@ return require('packer').startup(function (use)
 	g.quickui_border_style = 2
 	g.quickui_color_scheme = 'gruvbox'
 	use 'skywind3000/vim-quickui';
+
+	if packer_bootstrap then
+		require('packer').sync()
+	end
 end)

@@ -32,11 +32,21 @@ function split(str, delim)
 	return match
 end
 
-local path = require "plenary.path"
+local ensure_packer = function()
+  local fn = vim.fn
+  local install_path = fn.stdpath('data')..'/site/pack/packer/start/packer.nvim'
+  if fn.empty(fn.glob(install_path)) > 0 then
+    fn.system({'git', 'clone', '--depth', '1', 'https://github.com/wbthomason/packer.nvim', install_path})
+    vim.cmd [[packadd packer.nvim]]
+    return true
+  end
+  return false
+end
 
-CONFIG_FILE_PATH = path:new("$MYVIMRC"):expand()
+packer_bootstrap = ensure_packer()
 
-CURRENT_CONFIG_FOLDER = path:new(CONFIG_FILE_PATH):parent().filename
+
+CURRENT_CONFIG_FOLDER = ""
 
 function dump(o)
    if type(o) == 'table' then
