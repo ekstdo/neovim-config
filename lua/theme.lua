@@ -16,4 +16,5 @@ set.tabstop = 4
 set.shiftwidth = 4
 
 run("hi NvimTreeNormal guibg=#353535")
-run("hi VertSplit guifg=#353535")
+run("hi WinSeparator guifg=#353535 guibg=#1D2021")
+run("hi NvimTreeWinSeparator guibg=#353535 guifg=#1D2021")

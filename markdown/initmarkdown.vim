@@ -3,7 +3,6 @@ setlocal ft=markdown
 setlocal ft=markdown.pandoc
 
 
-let b:table_mode_corner='+'
 
 " Version Clears: {{{1
 
@@ -1641,3 +1640,6 @@ inoreabbrev <expr> __
 exec "source " . fnamemodify(expand("$MYVIMRC"), ":h") . "/markdown/corrections.vim"
 
 set ft=markdown.pandoc
+let g:table_mode_corner='+'
+let b:table_mode_corner='+'
+

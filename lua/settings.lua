@@ -67,3 +67,8 @@ function draw()
   run("Draw " .. fn.expand('%:r') .. tostring(i) .. ".svg")
 end
 run("command! Drawing call v:lua.draw()")
+
+g.matchparen_timeout = 20
+g.matchparen_insert_timeout = 20
+
+g.gruvbox_contrast_dark = "hard"
