@@ -17,4 +17,6 @@ set.shiftwidth = 4
 
 run("hi NvimTreeNormal guibg=#353535")
 run("hi WinSeparator guifg=#353535 guibg=#1D2021")
+run("hi! link SignColumn LineNr")
+run("hi! link FoldColumn LineNr")
 run("hi NvimTreeWinSeparator guibg=#353535 guifg=#1D2021")
