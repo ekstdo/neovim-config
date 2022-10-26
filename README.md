@@ -3,7 +3,7 @@
 
 ![screenshot](https://i.postimg.cc/wvP4c0Jv/nvimscreenshot.png)
 
-> :warning: **the bindings of this config are heavily focused on the colemak keyboard layout**
+> :warning: **the bindings of this config are heavily focused on the colemak keyboard layout**, though I am working on an option to turn it off
 
 ## dependencies 
 

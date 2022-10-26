@@ -39,14 +39,6 @@ return require('packer').startup(function (use)
 	}
 	keymap("n", "<space>tg", ":GrammarousCheck<CR>", opts)
 	use {'rhysd/vim-grammarous', opt = true, cmd = {'GrammarousCheck'} }
-	use { 'sirver/ultisnips', config = function()
-			g.UltiSnipsExpandTrigger = '<tab>'
-			g.UltiSnipsJumpForwardTrigger = '<tab>'
-			g.UltiSnipsJumpBackwardTrigger = '<s-tab>'
-			g.UltiSnipsSnippetDirectories={ CURRENT_CONFIG_FOLDER .. '/ultisnippets/' }
-			keymap("n", "<leader>cs", ":UltiSnipsEdit<CR>", opts)
-		end
-	}
 	use { 'folke/todo-comments.nvim'
 		, config = function()
 			require("todo-comments").setup { }
@@ -197,6 +189,16 @@ return require('packer').startup(function (use)
 			CURRENT_CONFIG_FOLDER = path:new(CONFIG_FILE_PATH):parent().filename
 
 
+		end
+	}
+	use { 'sirver/ultisnips',
+			requires = {'nvim-telescope/telescope.nvim'}, --because of plenary path
+			config = function()
+			g.UltiSnipsExpandTrigger = '<tab>'
+			g.UltiSnipsJumpForwardTrigger = '<tab>'
+			g.UltiSnipsJumpBackwardTrigger = '<s-tab>'
+			g.UltiSnipsSnippetDirectories={ CURRENT_CONFIG_FOLDER .. '/ultisnippets/' }
+			keymap("n", "<leader>cs", ":UltiSnipsEdit<CR>", opts)
 		end
 	}
 	use { 'nvim-telescope/telescope-bibtex.nvim'

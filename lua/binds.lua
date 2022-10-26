@@ -68,7 +68,7 @@ ss:<C-w>>
 <leader>w-:<C-w>s
 <leader>w|:<C-w>v
 <leader>wi:<c-w>l
-<C-down>:<Plug>newCursor
+<C-down>:<Plug>newCursor<CR>
 <space>tts::set tabstop=2 shiftwidth=2 expandtab | retab
 <space>tde::v/./d<CR>
 <space>tw::set wrap!<CR>
@@ -95,7 +95,7 @@ iStr = [[<C-Bs>:<C-w>
 ():()
 []:[]
 {}:{}
-<C-down>:<Plug>newCursor
+<C-down>:<Plug>newCursor<CR>
 <C-a>:<Esc>ggVG<CR>
 <C-s>:<Esc>:w<CR>i
 <C-l>:<c-g>u<Esc>[s1z=`]a<c-g>u]]
