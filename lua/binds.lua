@@ -1,16 +1,10 @@
 require "utils"
 
-str=interp((BINDINGS == "colemak" and [[-:o
+colemak_remap = [[-:o
 o:w
 w:t
 t:c
-tt:cc
-ti:ci
-ta:ca
 c:y
-cc:yy
-ci:yi
-ca:ya
 y:i
 i:l
 l:u
@@ -41,7 +35,14 @@ V:P
 P:,
 ,:N
 N:K
-K:V
+K:V]]
+
+str=interp((BINDINGS == "colemak" and colemak_remap .. [[tt:cc
+ti:ci
+ta:ca
+cc:yy
+ci:yi
+ca:ya
 <leader>wu:<c-w>k
 <leader>we:<c-w>j
 <leader>wn:<c-w>h
@@ -98,7 +99,7 @@ iStr = [[<C-Bs>:<C-w>
 <C-down>:<Plug>newCursor<CR>
 <C-a>:<Esc>ggVG<CR>
 <C-s>:<Esc>:w<CR>i
-<C-l>:<c-g>u<Esc>[s1z=`]a<c-g>u]]
+<C-p>:<c-g>u<Esc>[s1z=`]a<c-g>u]]
 
 vStr = [[>:>gv
 <C-c>:"+y<Esc>i
@@ -110,6 +111,8 @@ v:p:let @"=@0<CR>]]
 
 
 colonIter(function (from, to) vim.api.nvim_set_keymap('', from, to, { noremap = true }) end, str)
+-- run("let g:VM_maps = {}")
+-- colonIter(function (from, to) run("let g:VM_maps['" .. from .. "'] = '" .. to .. "'") end, colemak_remap)
 colonIter(function (from, to) vim.api.nvim_set_keymap('i', from, to, { noremap = true }) end, iStr)
 colonIter(function (from, to) vim.api.nvim_set_keymap('v', from, to, { noremap = true }) end, vStr)
 

@@ -29,7 +29,11 @@ return require('packer').startup(function (use)
 		, cmd = { "Limelight", "Limelight!", "Limelight!!" }
 	}
 	use 'junegunn/vim-easy-align'
-	use 'mg979/vim-visual-multi'
+	g.VM_mouse_mappings = 1
+	use { 'mg979/vim-visual-multi', config  = function()
+
+		end
+	}
 	use {"ziontee113/color-picker.nvim",
 		config = function()
 			require("color-picker")
@@ -125,6 +129,8 @@ return require('packer').startup(function (use)
 					v = "paste/swap window",
 					e = "ez swap window",
 					t = "tagbar",
+					s = "shell",
+					x = "debugger ui",
 					u = "undotree",
 					p = "tree sitter",
 					d = "drawing"
@@ -166,6 +172,13 @@ return require('packer').startup(function (use)
 					["-"] = "split",
 					["|"] = "vertsplit"
 				},
+				d = {
+					name = "+debugger",
+					s = "step over",
+					i = "step into",
+					c = "continue",
+					b = "breakpoint"
+				},
 				["+"] = "increase",
 				["-"] = "decrease"
 			}, { prefix = "<leader>" })
@@ -197,7 +210,7 @@ return require('packer').startup(function (use)
 			g.UltiSnipsExpandTrigger = '<tab>'
 			g.UltiSnipsJumpForwardTrigger = '<tab>'
 			g.UltiSnipsJumpBackwardTrigger = '<s-tab>'
-			g.UltiSnipsSnippetDirectories={ CURRENT_CONFIG_FOLDER .. '/ultisnippets/' }
+			g.UltiSnipsSnippetDirectories={ CURRENT_CONFIG_FOLDER .. '/ultisnippets' }
 			keymap("n", "<leader>cs", ":UltiSnipsEdit<CR>", opts)
 		end
 	}
@@ -414,7 +427,7 @@ return require('packer').startup(function (use)
 	use { 'quangnguyen30192/cmp-nvim-ultisnips' }
 	use { 'hrsh7th/cmp-nvim-lsp-signature-help' }
 	use { 'simrat39/rust-tools.nvim',
-			after = "nvim-lspconfig", config =  function() 
+			after = "nvim-lspconfig", config =  function()
 			local rt = require("rust-tools")
 
 			rt.setup({
@@ -491,7 +504,38 @@ return require('packer').startup(function (use)
 	-- 		g.vimspector_enable_mappings = 'HUMAN'
 	-- 	end
 	-- }
-	use 'mfussenegger/nvim-dap'
+	use { 'mfussenegger/nvim-dap', config = function ()
+			local dap = require("dap")
+
+			keymap("n", "<space>db", function() dap.toggle_breakpoint() end, opts)
+			keymap("n", "<space>dB", function() dap.set_breakpoint(vim.fn.input('Breakpoint condition: ')) end, opts)
+			keymap("n", "<space>dc", function() dap.continue() end, opts)
+			keymap("n", "<space>ds", function() dap.step_over() end, opts)
+			keymap("n", "<space>di", function() dap.step_into() end, opts)
+			keymap("n", "<space>dr", function() dap.repl.open() end, opts)
+			dap.adapters.lldb = {
+				type = 'executable',
+				command = '/usr/bin/lldb-vscode', -- adjust as needed, must be absolute path
+				name = 'lldb'
+			}
+
+			dap.configurations.cpp = {
+				{
+					name = 'Launch',
+					type = 'lldb',
+					request = 'launch',
+					program = function()
+						return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+					end,
+					cwd = '${workspaceFolder}',
+					stopOnEntry = false,
+					args = {},
+				},
+			}
+			dap.configurations.c = dap.configurations.cpp
+		end
+
+	}
 
 	use { 'theHamsta/nvim-dap-virtual-text', requires = {'mfussenegger/nvim-dap'}}
 	use { 'rcarriga/nvim-dap-ui', requires = {'mfussenegger/nvim-dap'}, config = function ()
@@ -506,6 +550,8 @@ return require('packer').startup(function (use)
 		dap.listeners.before.event_exited["dapui_config"] = function()
 			dapui.close()
 		end
+
+		keymap("n", "<space>sx", function() dapui.open() end, opts)
 
 		keymap("n", BINDINGS == "colemak" and"<M-n>" or "<M-k>", "<Cmd>lua require(\"dapui\").eval()<CR>", opts)
 	end}
@@ -555,9 +601,12 @@ return require('packer').startup(function (use)
 	}
 	use { 'rafaqz/citation.vim', ft = {'markdown'} }
 	g["pandoc#filetypes#pandoc_markdown"] = 0
+	if BINDINGS == "colemak" then
+		g["pandoc#keyboard#display_motions"] = 0;
+	end
 	use { 'vim-pandoc/vim-pandoc', ft = {'markdown'} }
 	use { 'vim-pandoc/vim-pandoc-syntax', ft = {'markdown'} }
-	use { 'skywind3000/asyncrun.vim', ft =  {'markdown', 'markdown.pandoc'}, cmd = 'StartMdPreview', config = function() 
+	use { 'skywind3000/asyncrun.vim', ft =  {'markdown', 'markdown.pandoc'}, cmd = 'StartMdPreview', config = function()
 			keymap("n", "<leader>pm", ":StartMdPreview<CR>", opts)
 		end }
 	use {'conornewton/vim-pandoc-markdown-preview', ft =  {'markdown', 'markdown.pandoc'}, cmd = 'StartMdPreview'}
@@ -619,6 +668,15 @@ return require('packer').startup(function (use)
 	keymap("n", "<C-y>", "<Esc>:call unicoder#start(1)<CR>", opts)
 	keymap("n", "<C-y>", ":<C-u>call unicoder#selection()<CR>", opts)
 	use {'joom/latex-unicoder.vim'}
+
+	use {
+		'jinh0/eyeliner.nvim',
+		config = function()
+			require'eyeliner'.setup {
+			  highlight_on_key = true
+			}
+		end
+	}
 
 --[[
   'dense-analysis/ale';

@@ -15,12 +15,17 @@ snippet ^^ "^{ }" iA
 endsnippet
 
 context "isMath()"
-snippet under "underset" iA
+snippet prob "probability" iA
+\mathbb{P}(${1:\\text{$2}})$0
+endsnippet
+
+context "isMath()"
+snippet under "underset" i
 \underset{${1:\\text{$2}}}{${3:=}}$0
 endsnippet
 
 context "isMath()"
-snippet over "overset" iA
+snippet over "overset" i
 \\overset{${1:\\text{$2}}}{${3:=}}$0
 endsnippet
 
@@ -51,12 +56,12 @@ snippet omg "infinity" iA
 endsnippet
 
 context "isMath()"
-snippet cc "subset" iA
+snippet ccc "subset" iA
 \\subset
 endsnippet
 
 context "isMath()"
-snippet c= "subset equals" iA
+snippet cc= "subset equals" iA
 \\subseteq
 endsnippet
 
@@ -525,4 +530,14 @@ endsnippet
 snippet nrt "nth root" iA
 \sqrt[${1:n}]{$2}$0
 endsnippet
+
+snippet header "header" i
+---
+author: Tuan Bui
+title: $1
+date: $2
+---
+$0
+endsnippet
+
 

@@ -4,7 +4,9 @@
     "Lua.diagnostics.globals": [
         "vim",
         "opts",
-        "pantran"
+        "pantran",
+        "str",
+        "colemak_remap"
     ],
     "Lua.workspace.checkThirdParty": false
 }

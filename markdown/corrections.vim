@@ -233,9 +233,8 @@ ab math_triangle △
 ab math_elem ∈
 ab math_not_contain ∌
 ab math_contain ∋
-ab math_integral
-ab ∫ music_gclef
-ab 𝄞 music_1
+ab math_integral ∫
+ab music_gclef 𝄞
 ab music_12 𝅗𝅥
 ab music_14 ♩
 ab music_18 ♪

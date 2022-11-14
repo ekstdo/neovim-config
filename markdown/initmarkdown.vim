@@ -1,8 +1,4 @@
-
-setlocal ft=markdown
-setlocal ft=markdown.pandoc
-
-
+echo &filetype 
 
 " Version Clears: {{{1
 
