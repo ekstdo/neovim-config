@@ -57,7 +57,7 @@ return require('packer').startup(function (use)
 
 	-- utilities in general
 	use { 'mhinz/vim-startify' , config = function()
-			g.startify_bookmarks={ { t = '~/.todo.md' }, { c = '~/.config/nvim/init.lua' } }
+			g.startify_bookmarks={ { t = '~/.todo.md' }, { c = '~/.config/nvim/init.lua' }, { k = '~/.config/kitty/kitty.conf' }, { z = '~/.zshrc' } }
 		end
 	} -- start menu
 	use 'lambdalisue/suda.vim'
@@ -184,6 +184,16 @@ return require('packer').startup(function (use)
 			}, { prefix = "<leader>" })
 		end
 	}
+
+	use {'nvim-lua/plenary.nvim', config = function()
+		local path = require "plenary.path"
+
+		CONFIG_FILE_PATH = path:new("$MYVIMRC"):expand()
+
+		g.CURRENT_CONFIG_FOLDER = path:new(CONFIG_FILE_PATH):parent().filename
+
+		end
+	}
 	use {
 		'nvim-telescope/telescope.nvim', tag = '0.1.0',
 		requires = { {'nvim-lua/plenary.nvim'} },
@@ -195,22 +205,17 @@ return require('packer').startup(function (use)
 			keymap("n", "<leader>ns", ":Telescope live_grep<CR>", opts)
 			keymap("n", "<leader>nh", ":Telescope help_tags<CR>", opts)
 
-			local path = require "plenary.path"
-
-			CONFIG_FILE_PATH = path:new("$MYVIMRC"):expand()
-
-			CURRENT_CONFIG_FOLDER = path:new(CONFIG_FILE_PATH):parent().filename
 
 
 		end
 	}
 	use { 'sirver/ultisnips',
-			requires = {'nvim-telescope/telescope.nvim'}, --because of plenary path
+			requires = { {'nvim-lua/plenary.nvim'} }, --because of plenary path
 			config = function()
 			g.UltiSnipsExpandTrigger = '<tab>'
 			g.UltiSnipsJumpForwardTrigger = '<tab>'
 			g.UltiSnipsJumpBackwardTrigger = '<s-tab>'
-			g.UltiSnipsSnippetDirectories={ CURRENT_CONFIG_FOLDER .. '/ultisnippets' }
+			g.UltiSnipsSnippetDirectories={ g.CURRENT_CONFIG_FOLDER .. '/ultisnippets' }
 			keymap("n", "<leader>cs", ":UltiSnipsEdit<CR>", opts)
 		end
 	}
@@ -324,6 +329,7 @@ return require('packer').startup(function (use)
 				flags = lsp_flags,
 				on_attach = on_attach,
 			}
+			lspconfig.golangci_lint_ls.setup{}
 			lspconfig.hls.setup{ flags = lsp_flags, on_attach = on_attach }
 			lspconfig['asm_lsp'].setup{ flags = lsp_flags, on_attach = on_attach }
 			lspconfig.sumneko_lua.setup {
@@ -529,10 +535,31 @@ return require('packer').startup(function (use)
 					end,
 					cwd = '${workspaceFolder}',
 					stopOnEntry = false,
+					args = function ()
+						local t={}
+						local argstring = vim.fn.input("Args: ")
+						for strn in string.gmatch(argstring, "([^%s]+)") do
+							table.insert(t, strn)
+						end
+						return t
+					end,
+					},
+				}
+			dap.configurations.c = dap.configurations.cpp
+			dap.configurations.rust = {
+				{
+					name = 'Launch',
+					type = 'lldb',
+					request = 'launch',
+					program = function()
+						return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/target/debug/', 'file')
+					end,
+					cwd = '${workspaceFolder}',
+					stopOnEntry = false,
 					args = {},
+					runInTerminal = false
 				},
 			}
-			dap.configurations.c = dap.configurations.cpp
 		end
 
 	}
@@ -676,6 +703,11 @@ return require('packer').startup(function (use)
 			  highlight_on_key = true
 			}
 		end
+	}
+
+	use {
+	  'kkoomen/vim-doge',
+	  run = ':call doge#install()'
 	}
 
 --[[

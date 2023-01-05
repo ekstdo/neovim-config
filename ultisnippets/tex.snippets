@@ -1,147 +1,143 @@
 global !p
-def isMath():
-    # DEBUGGING
-    synstack = vim.eval("map(synstack(line('.'), col('.') - (col('.')>=2 ? 1 : 0)), {i,v -> synIDattr(v, 'name')})")
-    # MODIFICATION reverse() is not necessary since pandocLaTeXInlineMath is the outer group anyway.
-    syntaxgroup = vim.eval("get(map(synstack(line('.'), col('.') - (col('.')>=2 ? 1 : 0)), {i,v -> synIDattr(v, 'name')}), 0, '')")
-    result = int(vim.eval("'"+syntaxgroup+"' =~# '\\(pandocLaTeXInlineMath\\|pandocLaTeXMathBlock\\)'"))
-    print("synstack: " + str(synstack), "syntaxgroup: "+ syntaxgroup, result)
-    return result
+def math():
+    return vim.eval('vimtex#syntax#in_mathzone()') == '1'
+
+def comment(): 
+    return vim.eval('vimtex#syntax#in_comment()') == '1'
+
+def env(name):
+    [x,y] = vim.eval("vimtex#env#is_inside('" + name + "')") 
+    return x != '0' and x != '0'
+
 endglobal
 
-context "isMath()"
+
+context "math()"
 snippet ^^ "^{ }" iA
 ^{$1}$0
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet prob "probability" iA
 \mathbb{P}(${1:\\text{$2}})$0
 endsnippet
 
-context "isMath()"
-snippet expec "expected value" iA
-\mathbb{E}(${1:\\text{$2}})$0
-endsnippet
-
-
-
-context "isMath()"
+context "math()"
 snippet under "underset" i
 \underset{${1:\\text{$2}}}{${3:=}}$0
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet over "overset" i
 \\overset{${1:\\text{$2}}}{${3:=}}$0
 endsnippet
 
 
-context "isMath()"
+context "math()"
 snippet __ "_{ }" iA
 _{$1}$0
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet fora "forall" iA
 \\forall
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet exi "forall" iA
 \\exists
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet ooo "infinity" iA
 \\infty
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet omg "infinity" iA
 \\omega
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet ccc "subset" iA
 \\subset
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet cc= "subset equals" iA
 \\subseteq
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet <= "subset" iA
 \\leq
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet >= "subset" iA
 \\geq
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet folge "Folge" iA
 ($1_n)_{n\geq m}
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet reihe "Reihe" iA
 \sum_{k = m}^{\infty} $1_k
 endsnippet
 
 
-context "isMath()"
+context "math()"
 snippet norm "Norm" iA
 \|$1\|$0
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet <( "predecessor" iA
 \\prec
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet <=( "predecessor or equals" iA
 \\preceq
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet )> "successor" iA
 \\succ
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet )=> "successor or equals" iA
 \\succeq
 endsnippet
 
 
-context "isMath()"
+context "math()"
 snippet >> "much greater" iA
 \\gg
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet << "much less" iA
 \\ll
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet ddt "derivative" iA
 \\frac{d}{dt}
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet floor "floor" iA
-\\lfloor ${1:x} \\rfloor$0
+\\lfloor $1 \\rfloor $0
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet ceil "ceil" iA
-\\lceil ${1:x} \\rceil$0
+\\lceil $1 \\rceil $0
 endsnippet
 
 snippet kbanach "K-Banachraum" w
@@ -188,7 +184,7 @@ snippet <un "underline" wA
 \underline{$0}
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet not "not" i
 \lnot
 endsnippet
@@ -197,33 +193,33 @@ snippet in "index" w
 _{$0}
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet ents "entspricht" iA
 \widehat{=}
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet potm "potenzmenge" iA
 \mathfrak{P}($0)
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet umge "Umgebung" iA
 U_{\epsilon}($0)
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet umgr "Umgebung" iA
 U_{\rho}($0)
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet umgd "Umgebung" iA
 U_{\delta}($0)
 endsnippet
 
 
-context "isMath()"
+context "math()"
 snippet cases "Zweige" iA
 \begin{cases}
     $0
@@ -241,43 +237,43 @@ endsnippet
 
 
 priority 10
-context "isMath()"
+context "math()"
 snippet "bar" "bar" riA
 \overline{$1}$0
 endsnippet
 
 priority 100
-context "isMath()"
+context "math()"
 snippet "([a-zA-Z]|[a-zA-Z][0-9_]\d)bar" "bar" riA
 \overline{`!p snip.rv=match.group(1)`}
 endsnippet
 
 priority 100
-context "isMath()"
+context "math()"
 snippet "(\([a-zA-Z\\0-9]+\))bar" "bar" riA
 \overline{`!p snip.rv=match.group(1)[1:-1]`}
 endsnippet
 
 priority 10
-context "isMath()"
+context "math()"
 snippet "hat" "hat" riA
 \hat{$1}$0
 endsnippet
 
 priority 100
-context "isMath()"
+context "math()"
 snippet "([a-zA-Z]|[a-zA-Z][0-9_]\d)hat" "hat" riA
 \hat{`!p snip.rv=match.group(1)`}
 endsnippet
 
 priority 10
-context "isMath()"
+context "math()"
 snippet "til" "hat" riA
 \tilde{$1}$0
 endsnippet
 
 priority 100
-context "isMath()"
+context "math()"
 snippet "([a-zA-Z]|[a-zA-Z][0-9_]\d)til" "til" riA
 \tilde{`!p snip.rv=match.group(1)`}
 endsnippet
@@ -285,12 +281,12 @@ endsnippet
 
 
 
-context "isMath()"
+context "math()"
 snippet nat "natural numbers" iA
 \mathbb{N}_0
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet comp "complex numbers" iA
 \mathbb{C}
 endsnippet
@@ -331,67 +327,67 @@ snippet img "image" w
 ![$0](./assets/$1)
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet xx "times" iA
 \times
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet LR "Leftrightarrow" iA
 \Leftrightarrow
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet rarr "rightarrow" iA
 \rightarrow
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet Rarr "Rightarrow" iA
 \Rightarrow
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet sq "squared" i
 ^{${1:2}}$0
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet srt "sqrt" iA
 \sqrt{$1}$0
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet inv "inverted" iA
 ^{-1}
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet ** "times" iA
 \cdot
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet zint "signed integers" iA
 \mathbb{Z}
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet int "integral" iA
 \int_{${1:0}}^{${2:\infty}}$0 d${3:x}
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet rat "rational numbers" iA
 \mathbb{Q}
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet real "real numbers" iA
 \mathbb{R}
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet ' "rational numbers" iA
 \textquotesingle
 endsnippet
@@ -402,12 +398,12 @@ snippet beg "begin{} / end{}" bA
 \end{$1}
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet '([A-Za-z])(\d)' "auto subscript" wrA
 `!p snip.rv = match.group(1)`_`!p snip.rv = match.group(2)`
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet '([A-Za-z])_(\d\d)' "auto subscript2" wrA
 `!p snip.rv = match.group(1)`_{`!p snip.rv = match.group(2)`}
 endsnippet
@@ -462,12 +458,12 @@ snip.rv = eval('latex(' + match.group(1).replace('\\', '') \
 `
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet '((\d+)|(\d*)(\\)?([A-Za-z]+)((\^|_)(\{\d+\}|\d))*)/' "Fraction" wrA
 \\frac{`!p snip.rv = match.group(1)`}{$1}$0
 endsnippet
 
-context "isMath()"
+context "math()"
 priority 1000
 snippet '^.*\)/' "() Fraction" wrA
 `!p
@@ -499,17 +495,17 @@ snippet qq "quad space" wA
 \quad
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet eps "eps" wA
 \epsilon
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet sum "sum" wA
 \sum_{${2:i}}^{${1:n}}$0
 endsnippet
 
-context "isMath()"
+context "math()"
 snippet prod "prod" wA
 \prod_{${2:i}}^{${1:n}}$0
 endsnippet
@@ -525,26 +521,8 @@ $$\begin{tabular}{rccccccccc}
   \end{tabular}$$
 endsnippet
 
-snippet graph "graph" w
-\`\`\`{.graphviz}
-digraph G {
-    $1 -> $2;
-    $3
-} $0
-\`\`\`
-endsnippet
 
 snippet nrt "nth root" iA
 \sqrt[${1:n}]{$2}$0
 endsnippet
-
-snippet header "header" i
----
-author: $0
-title: $1
-date: $2
----
-$0
-endsnippet
-
 

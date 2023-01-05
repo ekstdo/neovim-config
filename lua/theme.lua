@@ -3,7 +3,7 @@ require "utils"
 run("set cursorline")
 run("set cursorcolumn")
 g.gruvbox_italic = 1
-run("colo gruvbox")
+vim.cmd.colorscheme "gruvbox"
 run("set number")
 -- run("hi Normal guibg=NONE ctermbg=NONE")
 set.conceallevel = 1
