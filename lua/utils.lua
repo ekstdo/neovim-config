@@ -46,7 +46,6 @@ end
 packer_bootstrap = ensure_packer()
 
 
-CURRENT_CONFIG_FOLDER = ""
 
 function dump(o)
    if type(o) == 'table' then
@@ -116,4 +115,10 @@ end
 
 function mapHSV(RGB, mapper)
 	return rgb2str(hsv2rgb(mapper(rgb2hsv(normalizeRGB(parseRGB(RGB))))))
+end
+
+function printSynstack()
+	for index, data in ipairs(vim.fn.synstack(vim.fn.line("."), vim.fn.col("."))) do
+		print(index, "\t", data, "\t", vim.fn.synIDattr(data, "name"), "\t", vim.fn.synIDattr(vim.fn.synIDtrans(data), "name"))
+	end
 end

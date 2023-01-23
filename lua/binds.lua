@@ -70,7 +70,7 @@ ss:<C-w>>
 <leader>w|:<C-w>v
 <leader>wi:<c-w>l
 <C-down>:<Plug>newCursor<CR>
-<space>tts::set tabstop=2 shiftwidth=2 expandtab | retab
+<space>tts::set tabstop=2 shiftwidth=2 expandtab | retab<Home>
 <space>tde::v/./d<CR>
 <space>tw::set wrap!<CR>
 <space>ss::sp<CR><C-w><Down>:term<CR>
