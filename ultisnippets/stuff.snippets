@@ -24,6 +24,10 @@ snippet expec "expected value" iA
 \mathbb{E}(${1:\\text{$2}})$0
 endsnippet
 
+context "isMath()"
+snippet angle "expected value" iA
+\\langle ${1:\\text{$2}} \\rangle
+endsnippet
 
 
 context "isMath()"
@@ -55,6 +59,11 @@ endsnippet
 context "isMath()"
 snippet ooo "infinity" iA
 \\infty
+endsnippet
+
+context "isMath()"
+snippet errgrad "Error gradient" iA
+\\frac{\\del E(${2:w})}{\\del w_{${1:i}}}
 endsnippet
 
 context "isMath()"

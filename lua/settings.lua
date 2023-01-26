@@ -71,4 +71,6 @@ run("command! Drawing call v:lua.draw()")
 g.matchparen_timeout = 20
 g.matchparen_insert_timeout = 20
 
+g.CURRENT_CONFIG_FOLDER = string.gsub(os.getenv("MYVIMRC") or "~/.config/nvim/", "/[^/]*$", "/", 1)
+
 g.gruvbox_contrast_dark = "hard"

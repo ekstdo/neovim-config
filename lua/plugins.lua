@@ -4,21 +4,350 @@ require "binds"
 
 opts = {noremap = true, silent = true}
 
-run("autocmd BufWritePost plugins.lua luafile plugins.lua | PackerCompile")
+-- run("autocmd BufWritePost plugins.lua luafile plugins.lua | PackerCompile")
 
 
-return require('packer').startup(function (use)
-	keymap("n", "<leader>cr", ":PackerCompile<CR>", opts)
-	use 'wbthomason/packer.nvim'
+g.table_mode_map_prefix = '<space>T'
+g.table_mode_tableize_d_map = '<space>TT'
+g.table_mode_insert_column_after_map = '<space>Tac'
+
+g["pandoc#filetypes#pandoc_markdown"] = 0
+if BINDINGS == "colemak" then
+	g["pandoc#keyboard#display_motions"] = 0;
+end
 
 
+g.tagbar_position = "rightbelow"
+
+return require('lazy').setup({
 	-- FABULOUS
-	use 'morhetz/gruvbox'
+	'morhetz/gruvbox', -- colorscheme
+	'nvim-tree/nvim-web-devicons', -- icons
+
+
+	'nvim-lua/plenary.nvim', -- utility functions
+
+	'tpope/vim-fugitive', -- git integration
+	{'neovim/nvim-lspconfig',
+		config = function()
+
+			local on_attach = function(client, bufnr)
+				-- Enable completion triggered by <c-x><c-o>
+				vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+
+				-- Mappings.
+				-- See `:help vim.lsp.*` for documentation on any of the below functions
+				local bufopts = { noremap=true, silent=true, buffer=bufnr }
+				keymap('n', '<space>jD', vim.lsp.buf.declaration, bufopts)
+				keymap('n', '<space>jd', vim.lsp.buf.definition, bufopts)
+				keymap('n', '<space>ji', vim.lsp.buf.implementation, bufopts)
+				keymap('n', '<C-k>', vim.lsp.buf.signature_help, bufopts)
+				keymap('n', '<space>lwa', vim.lsp.buf.add_workspace_folder, bufopts)
+				keymap('n', '<space>lwr', vim.lsp.buf.remove_workspace_folder, bufopts)
+				keymap('n', '<space>lwl', function()
+					print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+				end, bufopts)
+				keymap('n', '<space>D', vim.lsp.buf.type_definition, bufopts)
+				keymap('n', '<space>jr', vim.lsp.buf.references, bufopts)
+				keymap('n', '<space>lf', vim.lsp.buf.formatting, bufopts)
+
+				vim.api.nvim_create_autocmd("CursorHold", {
+				buffer = bufnr,
+				callback = function()
+					local opts = {
+						focusable = false,
+						close_events = { "BufLeave", "CursorMoved", "InsertEnter", "FocusLost" },
+						border = 'rounded',
+						source = 'always',
+						prefix = ' ',
+						scope = 'cursor',
+					}
+					vim.diagnostic.open_float(nil, opts)
+				end
+			})
+			end
+
+			local lsp_flags = {}
+			-- local capabilities = require('cmp_nvim_lsp').default_capabilities()
+
+			local lspconfig = require('lspconfig')
+			lspconfig['pylsp'].setup{   on_attach = on_attach, flags = lsp_flags  }
+			lspconfig['tsserver'].setup{  on_attach = on_attach, flags = lsp_flags   }
+			lspconfig['elixirls'].setup{  cmd = { "elixir-ls" }, on_attach = on_attach   }
+			lspconfig['clangd'].setup{    flags = lsp_flags, on_attach = on_attach   }
+			lspconfig['wgsl_analyzer'].setup{    flags = lsp_flags, on_attach = on_attach   }
+			lspconfig['texlab'].setup{
+				flags = lsp_flags,
+				on_attach = on_attach,
+				filetypes = { "tex", "plaintex", "bib", "markdown" }
+			}
+
+			lspconfig['rust_analyzer'].setup{
+				flags = lsp_flags,
+				on_attach = on_attach,
+			}
+			lspconfig.golangci_lint_ls.setup{}
+			lspconfig.hls.setup{ flags = lsp_flags, on_attach = on_attach }
+			lspconfig['asm_lsp'].setup{ flags = lsp_flags, on_attach = on_attach }
+			lspconfig.sumneko_lua.setup {
+				settings = {
+					Lua = {
+						runtime = {
+							-- Tell the language server which version of Lua you're using (most likely LuaJIT in the case of Neovim)
+							version = 'LuaJIT',
+						},
+						diagnostics = {
+							-- Get the language server to recognize the `vim` global
+							globals = {'vim'},
+						},
+						workspace = {
+							-- Make the server aware of Neovim runtime files
+							library = vim.api.nvim_get_runtime_file("", true),
+						},
+						-- Do not send telemetry data containing a randomized but unique identifier
+						telemetry = {
+							enable = false,
+						},
+					},
+				},
+			}
+			-- capabilities.textDocument.completion.completionItem.snippetSupport = true
+
+			lspconfig.emmet_ls.setup({
+				on_attach = on_attach,
+				-- capabilities = capabilities,
+				filetypes = { 'html', 'typescriptreact', 'javascriptreact', 'css', 'sass', 'scss', 'less' },
+				init_options = {
+					html = {
+						options = {
+							-- For possible options, see: https://github.com/emmetio/emmet/blob/master/src/config.ts#L79-L267
+							["bem.enabled"] = true,
+						},
+					},
+				}
+			})
+
+			vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
+				vim.lsp.diagnostic.on_publish_diagnostics,
+				{
+					virtual_text = false,
+					signs = true,
+					update_in_insert = false,
+					underline = true,
+					severity_sort = true,
+				}
+			) -- removes virtual text 
+		end
+	},-- lsp config
+	{'williamboman/mason.nvim', config = function()
+		require("mason").setup()
+	end}, -- lsp installer
+	{ 'mfussenegger/nvim-dap', config = function () -- debugger
+			local dap = require("dap")
+
+			keymap("n", "<space>db", function() dap.toggle_breakpoint() end, opts)
+			keymap("n", "<space>dB", function() dap.set_breakpoint(vim.fn.input('Breakpoint condition: ')) end, opts)
+			keymap("n", "<space>dc", function() dap.continue() end, opts)
+			keymap("n", "<space>ds", function() dap.step_over() end, opts)
+			keymap("n", "<space>di", function() dap.step_into() end, opts)
+			keymap("n", "<space>dr", function() dap.repl.open() end, opts)
+			dap.adapters.lldb = {
+				type = 'executable',
+				command = '/usr/bin/lldb-vscode', -- adjust as needed, must be absolute path
+				name = 'lldb'
+			}
+
+			dap.configurations.cpp = {
+				{
+					name = 'Launch',
+					type = 'lldb',
+					request = 'launch',
+					program = function()
+						return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+					end,
+					cwd = '${workspaceFolder}',
+					stopOnEntry = false,
+					args = function ()
+						local t={}
+						local argstring = vim.fn.input("Args: ")
+						for strn in string.gmatch(argstring, "([^%s]+)") do
+							table.insert(t, strn)
+						end
+						return t
+					end,
+					},
+				}
+			dap.configurations.c = dap.configurations.cpp
+			dap.configurations.rust = {
+				{
+					name = 'Launch',
+					type = 'lldb',
+					request = 'launch',
+					program = function()
+						return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/target/debug/', 'file')
+					end,
+					cwd = '${workspaceFolder}',
+					stopOnEntry = false,
+					args = {},
+					runInTerminal = false
+				},
+			}
+		end
+
+	},
+
+	{ 'theHamsta/nvim-dap-virtual-text', requires = {'mfussenegger/nvim-dap'}},
+	{ 'rcarriga/nvim-dap-ui', requires = {'mfussenegger/nvim-dap'}, config = function ()
+		local dap, dapui = require("dap"), require("dapui")
+		dapui.setup()
+		dap.listeners.after.event_initialized["dapui_config"] = function()
+			dapui.open()
+		end
+		dap.listeners.before.event_terminated["dapui_config"] = function()
+			dapui.close()
+		end
+		dap.listeners.before.event_exited["dapui_config"] = function()
+			dapui.close()
+		end
+
+		keymap("n", "<space>sx", function() dapui.open() end, opts)
+
+		keymap("n", BINDINGS == "colemak" and"<M-n>" or "<M-k>", "<Cmd>lua require(\"dapui\").eval()<CR>", opts)
+	end},
+
+	'jose-elias-alvarez/null-ls.nvim', -- linter and formatter
+	{
+		'glepnir/lspsaga.nvim',
+		event = 'BufRead',
+		config = function()
+			local saga = require("lspsaga")
+
+			saga.setup({
+				-- your configuration
+				border_style = "rounded",
+				outline = {
+					keys = {
+						jump = '<CR>',
+						expand_collapse = "<Tab>"
+					}
+				},
+				ui = { title = false,
+					colors = {
+						title_bg = '#504945',
+						normal_bg = '#504945',
+					}
+				},
+				symbol_in_winbar = {
+					enable = false,
+					color_mode = false,
+				}
+			})
+
+			keymap({'n', 'v'}, '<leader>la', "<cmd>Lspsaga code_action<CR>", opts)
+			keymap("n", "gh", "<cmd>Lspsaga lsp_finder<CR>", opts)
+			keymap("n", "gd", "<cmd>Lspsaga peek_definition<CR>", opts)
+			keymap("n", "<space>lr", "<cmd>Lspsaga rename<CR>", opts)
+			keymap("n", "<space>ln", "<cmd>Lspsaga diagnostic_jump_prev<CR>", opts)
+			keymap("n", "<space>lp", "<cmd>Lspsaga diagnostic_jump_next<CR>", opts)
+			keymap("n", "<space>lb", "<cmd>Lspsaga show_buf_diagnostics<CR>", opts)
+			keymap("n", "<space>lo", "<cmd>Lspsaga outline<CR>", opts)
+			keymap("n", BINDINGS == "colemak" and "N" or "K", "<cmd>Lspsaga hover_doc<CR>", opts)
+		end,
+		dependencies = { {'nvim-tree/nvim-web-devicons'} }
+	},
+	{ 'mfussenegger/nvim-jdtls', ft = {'java'}, config = function()
+		end
+	},
+	{ 'hrsh7th/cmp-nvim-lsp', lazy = true },
+	{ 'hrsh7th/nvim-cmp', lazy = true, event = "InsertEnter" },
+	{ 'hrsh7th/cmp-buffer', lazy = true, event = "InsertEnter" },
+	{ 'hrsh7th/cmp-path', lazy = true, event = "InsertEnter" },
+	{ 'hrsh7th/cmp-cmdline', lazy = true, event = "InsertEnter" },
+	{ 'f3fora/cmp-spell', lazy = true, event = "InsertEnter" },
+	{ 'sirver/ultisnips', 
+			requires = { {'nvim-lua/plenary.nvim'} }, --because of plenary path
+			config = function()
+			g.UltiSnipsExpandTrigger = '<tab>'
+			g.UltiSnipsJumpForwardTrigger = '<tab>'
+			g.UltiSnipsJumpBackwardTrigger = '<s-tab>'
+			g.UltiSnipsSnippetDirectories={ g.CURRENT_CONFIG_FOLDER .. '/ultisnippets' }
+			keymap("n", "<leader>cs", ":UltiSnipsEdit<CR>", opts)
+		end
+	},
+	{ 'quangnguyen30192/cmp-nvim-ultisnips', lazy = true, event = "InsertEnter" },
+	{ 'hrsh7th/cmp-nvim-lsp-signature-help', lazy = true, event = "InsertEnter" },
+	{ 'simrat39/rust-tools.nvim', lazy = true, ft = {"rust"},
+			after = "nvim-lspconfig", config =  function()
+			local rt = require("rust-tools")
+
+			rt.setup({
+				server = {
+					on_attach = function(_, bufnr)
+						local bufopts = { noremap=true, silent=true, buffer=bufnr }
+						-- Hover actions
+						vim.keymap.set("n", "<C-space>", rt.hover_actions.hover_actions, bufopts)
+						-- Code action groups
+						vim.keymap.set("n", "<Leader>a", rt.code_action_group.code_action_group, bufopts)
+					end,
+				},
+			})
+		end
+	},
+	{
+		"windwp/nvim-autopairs",
+		config = function() require("nvim-autopairs").setup {} end
+	},
+	{'tzachar/cmp-tabnine', build='./install.sh', dependencies = { 'hrsh7th/nvim-cmp', 'onsails/lspkind.nvim' }
+		, config = function()
+
+			local lspkind = require('lspkind');
+			lspkind.init()
+			local cmp = require'cmp'
+			local select_opts = {behavior = cmp.SelectBehavior.Select}
+			local cmp_autopairs = require('nvim-autopairs.completion.cmp')
+
+			vim.opt.spell = true
+			vim.opt.spelllang = { 'en_us', 'de_de' }
+			cmp.setup {
+				completion = {
+				},
+				snippet = {
+					expand = function(args)
+						 vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
+					end,
+				},
+				mapping = {
+					['<S-Tab>'] = cmp.mapping.select_prev_item(select_opts),
+					['<Tab>'] = cmp.mapping.select_next_item(select_opts),
+					['<CR>'] = cmp.mapping.confirm({ select = false }),
+					-- ['<esc>'] = cmp.mapping.abort()
+				},
+				sources = cmp.config.sources({
+						{ name = 'nvim_lsp_signature_help' },
+						{ name = 'path' },
+						{ name = 'nvim_lsp', keyword_length = 2 },
+						{ name = 'ultisnips' },
+						{ name = 'cmp_tabnine' },
+				}, {{ name = 'buffer', keyword_length = 3 }, { name = 'spell' }}),
+				formatting = {
+					format = lspkind.cmp_format({})
+				},
+				experimental = {
+					ghost_text = true
+				}
+
+			}
+
+			cmp.event:on(
+				'confirm_done',
+				cmp_autopairs.on_confirm_done()
+			)
+		end
+	, lazy = true, event = "InsertEnter"},
 
 	-- utilities while writing
-
-	keymap("n", "<space>tf", ":Limelight!!<CR>", opts)
-	use { 'junegunn/limelight.vim'
+	{ 'junegunn/limelight.vim'
+		, keys = {{"<space>tf", "<cmd>Limelight!!<CR>", desc="focus mode"}}, lazy = true, cmd = { "Limelight" }
 		, config = function ()
 			-- Color name (:help cterm-colors) or ANSI code
 			g.limelight_conceal_ctermfg = 'gray'
@@ -26,104 +355,43 @@ return require('packer').startup(function (use)
 			-- Color name (:help gui-colors) or RGB color
 			g.limelight_conceal_guifg = 'DarkGray'
 			g.limelight_conceal_guifg = '#777777'
-
 		end
-		, opt = true
-		, cmd = { "Limelight", "Limelight!", "Limelight!!" }
-	}
-	keymap("n", "ga", "<Plug>(EasyAlign)", opts)
-	keymap("x", "ga", "<Plug>(EasyAlign)", opts)
-
-	use 'junegunn/vim-easy-align'
-	g.VM_mouse_mappings = 1
-	use { 'mg979/vim-visual-multi', config  = function()
-
-		end
-	}
-	use {"ziontee113/color-picker.nvim",
-		config = function()
-			require("color-picker")
-
-			keymap("n", "<space><C-c>", "<cmd>PickColor<cr>", opts)
-		end,
-	}
-	keymap("n", "<space>tg", ":GrammarousCheck<CR>", opts)
-	use {'rhysd/vim-grammarous', opt = true, cmd = {'GrammarousCheck'} }
-	use { 'folke/todo-comments.nvim'
-		, config = function()
-			require("todo-comments").setup { }
-		end
-	}
-	use {
-		"max397574/colortils.nvim",
-		cmd = "Colortils",
-		config = function()
-require("colortils").setup({
-    -- Register in which color codes will be copied
-    register = "+",
-    -- Preview for colors, if it contains `%s` this will be replaced with a hex color code of the color
-    color_preview =  "█ %s",
-    -- The default in which colors should be saved
-    -- This can be hex, hsl or rgb
-    default_format = "hex",
-    -- Border for the float
-    border = "rounded",
-    -- Some mappings which are used inside the tools
-    mappings = {
-        -- increment values
-        increment = "l",
-        -- decrement values
-        decrement = "h",
-        -- increment values with bigger steps
-        increment_big = "L",
-        -- decrement values with bigger steps
-        decrement_big = "H",
-        -- set values to the minimum
-        min_value = "0",
-        -- set values to the maximum
-        max_value = "$",
-        -- save the current color in the register specified above with the format specified above
-        set_register_default_format = "<cr>",
-        -- save the current color in the register specified above with a format you can choose
-        set_register_cjoose_format = "g<cr>",
-        -- replace the color under the cursor with the current color in the format specified above
-        replace_default_format = "<m-cr>",
-        -- replace the color under the cursor with the current color in a format you can choose
-        replace_choose_format = "g<m-cr>",
-        -- export the current color to a different tool
-        export = "E",
-        -- set the value to a certain number (done by just entering numbers)
-        set_value = "c",
-        -- toggle transparency
-        transparency = "T",
-        -- choose the background (for transparent colors)
-        choose_background = "B",
-    }
-})
-		end,
-	}
-	use 'honza/vim-snippets'
-	use 'tpope/vim-commentary'
-	use { 'chrisbra/NrrwRgn', cmd = {'NR', 'NW', 'NRP', 'NRM'} }
+	},
+	'junegunn/vim-easy-align',
+	{'mg979/vim-visual-multi', config = function()
+		g.VM_mouse_mappings = 1
+	end, keys = {{"<C-down>", "<Plug>newCursor<CR>"}}},
+	{"ziontee113/color-picker.nvim",
+		setup = true, lazy = true, keys = {{"<space><C-c>", "<cmd>PickColor<cr>", desc = "Color Picker"}}
+	},
+	{'rhysd/vim-grammarous', lazy = true,
+		keys = {{"<space>tg", "<cmd>GrammarousCheck<CR>", desc = "Grammar checker"}}, cmd = {'GrammarousCheck'} },
+	{ 'folke/todo-comments.nvim', setup = true },
+	{ 'norcalli/nvim-colorizer.lua', setup = true },
+	'honza/vim-snippets',
+	'tpope/vim-commentary',
+	{ 'chrisbra/NrrwRgn', cmd = {'NR', 'NW', 'NRP', 'NRM'} },
+	{'windwp/nvim-autopairs', setup=true},
+	'lambdalisue/suda.vim',
 
 
-
-	-- utilities in general
-	use { 'mhinz/vim-startify' , config = function()
+	{ 'tweekmonster/startuptime.vim', lazy = true, cmd = { "StartupTime"}}, -- timer
+	{ 'mhinz/vim-startify' , config = function()
 			g.startify_bookmarks={ { t = '~/.todo.md' }, { c = '~/.config/nvim/init.lua' }, { k = '~/.config/kitty/kitty.conf' }, { z = '~/.zshrc' } }
 		end
-	} -- start menu
-	use 'lambdalisue/suda.vim'
-
-	keymap("n", "<space>sf", ":NvimTreeToggle<CR>", opts)
-	use { 'kyazdani42/nvim-tree.lua'
-		, requires = { 'kyazdani42/nvim-web-devicons' }
+	}, -- start menu
+	{ 'nvim-tree/nvim-tree.lua'
+		, dependencies = { 'nvim-tree/nvim-web-devicons' }
 		, tag = 'nightly'
 		, config = function ()
 			require("nvim-tree").setup()
 		end,
-	} -- file tree
-	use {'akinsho/bufferline.nvim', tag = "v2.*", requires = { 'kyazdani42/nvim-web-devicons' }
+		lazy = true,
+		cmd = {"NvimTreeOpen", "NvimTreeToggle"},
+		keys = {{"<space>sf", "<cmd>NvimTreeToggle<CR>", desc="file tree"}}
+
+	}, -- file tree
+	{'akinsho/bufferline.nvim', tag = "v3.*", dependencies = { 'nvim-tree/nvim-web-devicons' }
 		, config = function ()
 			vim.opt.termguicolors = true
 			require("bufferline").setup{
@@ -134,13 +402,12 @@ require("colortils").setup({
 				}
 			}
 		end
-	} -- bufferline
-	use { 'tweekmonster/startuptime.vim'
-		, opt = true
-		, cmd = { "StartupTime"}
-	} -- timer
-	use { 'folke/which-key.nvim'
-		, opt=true
+	}, -- bufferline
+
+
+
+	{ 'folke/which-key.nvim'
+		, lazy=true
 		, keys="<space>"
 		, config = function ()
 			local wk = require("which-key")
@@ -236,18 +503,8 @@ require("colortils").setup({
 				["-"] = "decrease"
 			}, { prefix = "<leader>" })
 		end
-	}
-
-	use {'nvim-lua/plenary.nvim', config = function()
-		local path = require "plenary.path"
-
-		CONFIG_FILE_PATH = path:new("$MYVIMRC"):expand()
-
-		g.CURRENT_CONFIG_FOLDER = path:new(CONFIG_FILE_PATH):parent().filename
-
-		end
-	}
-	use {
+	},
+	{
 		'nvim-telescope/telescope.nvim', tag = '0.1.0',
 		requires = { {'nvim-lua/plenary.nvim'} },
 		config = function()
@@ -257,442 +514,45 @@ require("colortils").setup({
 			keymap("n", "<leader>nb", ":Telescope buffers<CR>", opts)
 			keymap("n", "<leader>ns", ":Telescope live_grep<CR>", opts)
 			keymap("n", "<leader>nh", ":Telescope help_tags<CR>", opts)
-
-
-
-		end
-	}
-	use { 'sirver/ultisnips',
-			requires = { {'nvim-lua/plenary.nvim'} }, --because of plenary path
-			config = function()
-			g.UltiSnipsExpandTrigger = '<tab>'
-			g.UltiSnipsJumpForwardTrigger = '<tab>'
-			g.UltiSnipsJumpBackwardTrigger = '<s-tab>'
-			g.UltiSnipsSnippetDirectories={ g.CURRENT_CONFIG_FOLDER .. '/ultisnippets' }
-			keymap("n", "<leader>cs", ":UltiSnipsEdit<CR>", opts)
-		end
-	}
-	use { 'nvim-telescope/telescope-bibtex.nvim'
+		end, lazy = true, cmd = "Telescope"
+	},
+	{ 'nvim-telescope/telescope-bibtex.nvim'
 		, requires = { 'nvim-telescope/telescope.nvim' }
 		, config = function ()
 			require('telescope').load_extension("bibtex")
-		end
-	}
-	use { 'nvim-telescope/telescope-fzf-native.nvim'
-		, requires = { 'nvim-telescope/telescope.nvim' }
-		, run = 'make'
-		, config = function ()
-			require('telescope').load_extension("fzf")
-		end
-	}
-	keymap("n", "+" , "<Plug>(choosewin)", {})
-	use { 't9md/vim-choosewin'
+		end,
+		lazy = true, cmd = "Telescope",
+		ft = {'markdown', 'tex'}
+	},
+	{ 't9md/vim-choosewin'
 		, config = function()
 			g.choosewin_overlay_enable = 1
 		end,
-		keys = { "<Plug>(choosewin)"}
-	} -- window chooser
-	use { 'wesQ3/vim-windowswap'
+		keys = {{"+", "<Plug>(choosewin)"}}
+	}, -- window chooser
+	{ 'wesQ3/vim-windowswap'
 		, config = function()
 			g.windowswap_map_keys = 0
 			keymap("n", BINDINGS == "colemak" and "<leader>sc" or "<leader>sy", ":call WindowSwap#MarkWindowSwap()<CR>", opts)
 			keymap("n", BINDINGS == "colemak" and "<leader>sv" or "<leader>sp", ":call WindowSwap#DoWindowSwap()<CR>", opts)
 			keymap("n", "<leader>se", ":call WindowSwap#EasyWindowSwap()<CR>", opts)
 		end
-	}
-	use 'tpope/vim-fugitive' -- git integration
-	keymap("n", "<leader>sm", ":Minimap<CR>", opts)
-	use {'wfxr/minimap.vim', cmd = {'Minimap', 'MinimapToggle'} }
-	use 'kana/vim-metarw' -- fake paths 
-	keymap("n", "<leader>st", ":TagbarToggle<CR>", opts)
-	g.tagbar_position = "rightbelow"
-	use {'majutsushi/tagbar', opt = true, cmd = {'Tagbar', 'TagbarToggle'} }
-	keymap("n", "<leader>su", ":UndotreeToggle<CR>", opts)
-	use {'mbbill/undotree', opt = true, cmd = {'UndoTree', 'UndotreeToggle' } }
-	keymap("n", "<leader>fc", ":VCoolor<CR>", opts)
-	use {'KabbAmine/vCoolor.vim', cmd = 'VCoolor'}
-	keymap("n", "<leader>sz", "<Plug>Zeavim", opts)
-	use {'kabbamine/zeavim.vim', keys = {'<Plug>Zeavim', '<Plug>ZVVisSelection', '<Plug>ZVOperator', '<Plug>ZVKeyDocset' }, cmd = { 'Zeavim', 'ZeavimV', 'Zeavim!'}}
-	keymap("n", "<leader>sq", ":Quickrun<CR>", opts)
-	use {'thinca/vim-quickrun', cmd = 'QuickRun' }
-
-	-- LSP
-	use { 'neovim/nvim-lspconfig'
-		, config = function()
-			keymap('n', '<space>e', vim.diagnostic.open_float, opts)
-			keymap('n', '<space>jp', vim.diagnostic.goto_prev, opts)
-			keymap('n', '<space>jn', vim.diagnostic.goto_next, opts)
-			keymap('n', '<space>q', vim.diagnostic.setloclist, opts)
-
-			local navic = require("nvim-navic")
-
-			local on_attach = function(client, bufnr)
-				-- Enable completion triggered by <c-x><c-o>
-				vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
-
-				-- Mappings.
-				-- See `:help vim.lsp.*` for documentation on any of the below functions
-				local bufopts = { noremap=true, silent=true, buffer=bufnr }
-				keymap('n', '<space>jD', vim.lsp.buf.declaration, bufopts)
-				keymap('n', '<space>jd', vim.lsp.buf.definition, bufopts)
-				keymap('n', '<space>ji', vim.lsp.buf.implementation, bufopts)
-				keymap('n', '<C-k>', vim.lsp.buf.signature_help, bufopts)
-				keymap('n', '<space>lwa', vim.lsp.buf.add_workspace_folder, bufopts)
-				keymap('n', '<space>lwr', vim.lsp.buf.remove_workspace_folder, bufopts)
-				keymap('n', '<space>lwl', function()
-					print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
-				end, bufopts)
-				keymap('n', '<space>D', vim.lsp.buf.type_definition, bufopts)
-				keymap('n', '<space>jr', vim.lsp.buf.references, bufopts)
-				keymap('n', '<space>lf', vim.lsp.buf.formatting, bufopts)
-				navic.attach(client, bufnr)
-
-				vim.api.nvim_create_autocmd("CursorHold", {
-				buffer = bufnr,
-				callback = function()
-					local opts = {
-						focusable = false,
-						close_events = { "BufLeave", "CursorMoved", "InsertEnter", "FocusLost" },
-						border = 'rounded',
-						source = 'always',
-						prefix = ' ',
-						scope = 'cursor',
-					}
-					vim.diagnostic.open_float(nil, opts)
-				end
-			})
-			end
-
-			local lsp_flags = {}
-			local capabilities = require('cmp_nvim_lsp').default_capabilities()
-
-			local lspconfig = require('lspconfig')
-			lspconfig['pylsp'].setup{   on_attach = on_attach, flags = lsp_flags  }
-			lspconfig['tsserver'].setup{  on_attach = on_attach, flags = lsp_flags   }
-			lspconfig['elixirls'].setup{  cmd = { "elixir-ls" }, on_attach = on_attach   }
-			lspconfig['clangd'].setup{    flags = lsp_flags, on_attach = on_attach   }
-			lspconfig['wgsl_analyzer'].setup{    flags = lsp_flags, on_attach = on_attach   }
-			lspconfig['texlab'].setup{
-				flags = lsp_flags,
-				on_attach = on_attach,
-				filetypes = { "tex", "plaintex", "bib", "markdown" }
-			}
-
-			lspconfig['rust_analyzer'].setup{
-				flags = lsp_flags,
-				on_attach = on_attach,
-			}
-			lspconfig.golangci_lint_ls.setup{}
-			lspconfig.hls.setup{ flags = lsp_flags, on_attach = on_attach }
-			lspconfig['asm_lsp'].setup{ flags = lsp_flags, on_attach = on_attach }
-			lspconfig.sumneko_lua.setup {
-				settings = {
-					Lua = {
-						runtime = {
-							-- Tell the language server which version of Lua you're using (most likely LuaJIT in the case of Neovim)
-							version = 'LuaJIT',
-						},
-						diagnostics = {
-							-- Get the language server to recognize the `vim` global
-							globals = {'vim'},
-						},
-						workspace = {
-							-- Make the server aware of Neovim runtime files
-							library = vim.api.nvim_get_runtime_file("", true),
-						},
-						-- Do not send telemetry data containing a randomized but unique identifier
-						telemetry = {
-							enable = false,
-						},
-					},
-				},
-			}
-			capabilities.textDocument.completion.completionItem.snippetSupport = true
-
-			lspconfig.emmet_ls.setup({
-				on_attach = on_attach,
-				capabilities = capabilities,
-				filetypes = { 'html', 'typescriptreact', 'javascriptreact', 'css', 'sass', 'scss', 'less' },
-				init_options = {
-					html = {
-						options = {
-							-- For possible options, see: https://github.com/emmetio/emmet/blob/master/src/config.ts#L79-L267
-							["bem.enabled"] = true,
-						},
-					},
-				}
-			})
-
-			vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
-				vim.lsp.diagnostic.on_publish_diagnostics,
-				{
-					virtual_text = false,
-					signs = true,
-					update_in_insert = false,
-					underline = true,
-				}
-			) -- removes virtual text 
-
-
-
-
-		end
-	}
-	use {
-		"SmiteshP/nvim-navic",
-		requires = "neovim/nvim-lspconfig"
-	}
-	use { 'RishabhRD/nvim-lsputils' }
-	use {
-		"glepnir/lspsaga.nvim",
-		branch = "main",
-		config = function()
-			local saga = require("lspsaga")
-
-			saga.init_lsp_saga({
-				-- your configuration
-				border_style = "rounded",
-			})
-
-			keymap('n', '<leader>la', "<cmd>Lspsaga code_action<CR>", opts)
-			keymap('v', "<leader>la", "<cmd>Lspsaga range_code_action<CR>", opts)
-			keymap("n", "gh", "<cmd>Lspsaga lsp_finder<CR>", opts)
-			keymap("n", "gd", "<cmd>Lspsaga peek_definition<CR>", opts)
-			keymap("n", "<space>lr", "<cmd>Lspsaga rename<CR>", opts)
-			keymap("n", BINDINGS == "colemak" and "N" or "K", "<cmd>Lspsaga hover_doc<CR>", opts)
-		end,
-	}
-	use {
-		"folke/trouble.nvim",
-		requires = "kyazdani42/nvim-web-devicons",
-		config = function()
-		require("trouble").setup {
-			-- your configuration comes here
-			-- or leave it empty to use the default settings
-			-- refer to the configuration section below
+	},
+	{'wfxr/minimap.vim', cmd = {'Minimap', 'MinimapToggle'}, keys = {{"<leader>sm", ":Minimap<CR>"}} },
+	'kana/vim-metarw', -- fake paths 
+	{'majutsushi/tagbar', lazy = true, cmd = {'Tagbar', 'TagbarToggle'}, keys = {{"<leader>st", ":TagbarToggle<CR>"}} },
+	{'mbbill/undotree', lazy = true, cmd = {'UndoTree', 'UndotreeToggle' }, keys = {{"<leader>su", ":UndotreeToggle<CR>"}} },
+	{'KabbAmine/vCoolor.vim', lazy = true, cmd = 'VCoolor', keys = {"<leader>fc", ":VCoolor<CR>"}},
+	{'kabbamine/zeavim.vim', lazy = true, keys = { {"<leader>sz", "<Plug>Zeavim"}, '<Plug>Zeavim', '<Plug>ZVVisSelection', '<Plug>ZVOperator', '<Plug>ZVKeyDocset' }, cmd = { 'Zeavim', 'ZeavimV'}},
+	{'is0n/jaq-nvim', keys={{"<leader>sq", ":Jaq<CR>"}}, opts = {
+		cmds = {
+			internal = { lua = "luafile %", vim = "source %" },
+			external = { python = "python %", go = "go run %", rust = "cargo run", sh = "sh %" }
 		}
-		end
-	}
-	use { 'mfussenegger/nvim-jdtls', ft = {'java'}, config = function()
-
-		end
-	}
-	use { 'hrsh7th/cmp-nvim-lsp' }
-	use { 'hrsh7th/nvim-cmp' }
-	use { 'hrsh7th/cmp-buffer' }
-	use { 'hrsh7th/cmp-path' }
-	use { 'hrsh7th/cmp-cmdline' }
-	use { 'f3fora/cmp-spell' }
-	use { 'quangnguyen30192/cmp-nvim-ultisnips' }
-	use { 'hrsh7th/cmp-nvim-lsp-signature-help' }
-	use { 'simrat39/rust-tools.nvim',
-			after = "nvim-lspconfig", config =  function()
-			local rt = require("rust-tools")
-
-			rt.setup({
-				server = {
-					on_attach = function(_, bufnr)
-						local bufopts = { noremap=true, silent=true, buffer=bufnr }
-						-- Hover actions
-						vim.keymap.set("n", "<C-space>", rt.hover_actions.hover_actions, bufopts)
-						-- Code action groups
-						vim.keymap.set("n", "<Leader>a", rt.code_action_group.code_action_group, bufopts)
-					end,
-				},
-			})
-		end
-	}
-	use {
-		"windwp/nvim-autopairs",
-		config = function() require("nvim-autopairs").setup {} end
-	}
-	use {'tzachar/cmp-tabnine', run='./install.sh', requires = { 'hrsh7th/nvim-cmp', 'onsails/lspkind.nvim' }
-		, config = function()
-
-			local lspkind = require('lspkind');
-			lspkind.init()
-			local cmp = require'cmp'
-			local select_opts = {behavior = cmp.SelectBehavior.Select}
-			local cmp_autopairs = require('nvim-autopairs.completion.cmp')
-
-			vim.opt.spell = true
-			vim.opt.spelllang = { 'en_us', 'de_de' }
-			cmp.setup {
-				completion = {
-				},
-				snippet = {
-					expand = function(args)
-						 vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
-					end,
-				},
-				mapping = {
-					['<S-Tab>'] = cmp.mapping.select_prev_item(select_opts),
-					['<Tab>'] = cmp.mapping.select_next_item(select_opts),
-					['<CR>'] = cmp.mapping.confirm({ select = false }),
-					-- ['<esc>'] = cmp.mapping.abort()
-				},
-				sources = cmp.config.sources({
-						{ name = 'nvim_lsp_signature_help' },
-						{ name = 'path' },
-						{ name = 'nvim_lsp', keyword_length = 2 },
-						{ name = 'ultisnips' },
-						{ name = 'cmp_tabnine' },
-				}, {{ name = 'buffer', keyword_length = 3 }, { name = 'spell' }}),
-				formatting = {
-					format = lspkind.cmp_format({})
-				},
-				experimental = {
-					ghost_text = true
-				}
-
-			}
-
-			cmp.event:on(
-				'confirm_done',
-				cmp_autopairs.on_confirm_done()
-			)
-		end
-	}
-	-- use {'neoclide/coc.nvim'; branch = 'release'}
-	--
-	-- a memorial of the past
-
-	-- LSP related
-	-- use { 'puremourning/vimspector'
-	-- 	, config = function()
-	-- 		g.vimspector_enable_mappings = 'HUMAN'
-	-- 	end
-	-- }
-	use { 'mfussenegger/nvim-dap', config = function ()
-			local dap = require("dap")
-
-			keymap("n", "<space>db", function() dap.toggle_breakpoint() end, opts)
-			keymap("n", "<space>dB", function() dap.set_breakpoint(vim.fn.input('Breakpoint condition: ')) end, opts)
-			keymap("n", "<space>dc", function() dap.continue() end, opts)
-			keymap("n", "<space>ds", function() dap.step_over() end, opts)
-			keymap("n", "<space>di", function() dap.step_into() end, opts)
-			keymap("n", "<space>dr", function() dap.repl.open() end, opts)
-			dap.adapters.lldb = {
-				type = 'executable',
-				command = '/usr/bin/lldb-vscode', -- adjust as needed, must be absolute path
-				name = 'lldb'
-			}
-
-			dap.configurations.cpp = {
-				{
-					name = 'Launch',
-					type = 'lldb',
-					request = 'launch',
-					program = function()
-						return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
-					end,
-					cwd = '${workspaceFolder}',
-					stopOnEntry = false,
-					args = function ()
-						local t={}
-						local argstring = vim.fn.input("Args: ")
-						for strn in string.gmatch(argstring, "([^%s]+)") do
-							table.insert(t, strn)
-						end
-						return t
-					end,
-					},
-				}
-			dap.configurations.c = dap.configurations.cpp
-			dap.configurations.rust = {
-				{
-					name = 'Launch',
-					type = 'lldb',
-					request = 'launch',
-					program = function()
-						return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/target/debug/', 'file')
-					end,
-					cwd = '${workspaceFolder}',
-					stopOnEntry = false,
-					args = {},
-					runInTerminal = false
-				},
-			}
-		end
-
-	}
-
-	use { 'theHamsta/nvim-dap-virtual-text', requires = {'mfussenegger/nvim-dap'}}
-	use { 'rcarriga/nvim-dap-ui', requires = {'mfussenegger/nvim-dap'}, config = function ()
-		local dap, dapui = require("dap"), require("dapui")
-		dapui.setup()
-		dap.listeners.after.event_initialized["dapui_config"] = function()
-			dapui.open()
-		end
-		dap.listeners.before.event_terminated["dapui_config"] = function()
-			dapui.close()
-		end
-		dap.listeners.before.event_exited["dapui_config"] = function()
-			dapui.close()
-		end
-
-		keymap("n", "<space>sx", function() dapui.open() end, opts)
-
-		keymap("n", BINDINGS == "colemak" and"<M-n>" or "<M-k>", "<Cmd>lua require(\"dapui\").eval()<CR>", opts)
-	end}
-
-
-	-- file types
-	use { 'cespare/vim-toml',           ft = {'toml'} }
-	use { 'elzr/vim-json',              ft = {'json'} }
-	use { 'vim-scripts/xml.vim',        ft = {'xml'}  }
-	use { 'tpope/vim-markdown',         ft = {'markdown'} }
-	use { 'purescript-contrib/purescript-vim', ft = {'purescript'} }
-	use { 'vmchale/dhall-vim',          ft = {'dhall'} }
-	use { 'ElmCast/elm-vim',            ft = {'elm'} }
-	use { 'lervag/vimtex',          ft = {'latex', 'tex'} }
-	use { 'donRaphaco/neotex',          ft = {'latex', 'tex'}
-		, config = function()
-			g.tex_flavor = 'latex' -- neotex
-			g.vimtex_quickfix_mode=0
-		end
-	}
-	use { 'edwinb/idris2-vim',          ft = {'idris', 'idr'} }
-	use { 'elixir-editors/vim-elixir',  ft = {'elixir'} }
-	use { 'DingDean/wgsl.vim',          ft = {'wgsl'} }
-	use { 'mpickering/hlint-refactor-vim', ft = {'haskell'} }
-	use { 'honza/dockerfile.vim',       ft = {'Dockerfile'} }
-	use {'neoclide/vim-jsx-improve',    ft = {'javascript', 'jsx', 'javascript.jsx'} }
-	use { 'kmonad/kmonad-vim',          ft = {'kbd'} } -- kmonad config
-	use 'nvim-orgmode/orgmode'
-	use { 'mfussenegger/nvim-dap-python', ft = {'python'}, requires = {'mfussenegger/nvim-dap'}}
-
-	-- markdown
-	g.table_mode_map_prefix = '<space>T'
-	g.table_mode_tableize_d_map = '<space>TT'
-	g.table_mode_insert_column_after_map = '<space>Tac'
-	use { 'dhruvasagar/vim-table-mode'
-		, ft = {'markdown'}
-		, config = function()
-			g.table_mode_corner='+'
-			g.table_mode_corner_corner='+'
-			g.table_mode_header_fillchar='='
-			g.table_mode_align_char = ':'
-
-			g.table_mode_corner_corner='+'
-			g.table_mode_header_fillchar='='
-
-		end
-	}
-	use { 'rafaqz/citation.vim', ft = {'markdown'} }
-	g["pandoc#filetypes#pandoc_markdown"] = 0
-	if BINDINGS == "colemak" then
-		g["pandoc#keyboard#display_motions"] = 0;
-	end
-	use { 'vim-pandoc/vim-pandoc', ft = {'markdown'} }
-	use { 'vim-pandoc/vim-pandoc-syntax', ft = {'markdown'} }
-	use { 'skywind3000/asyncrun.vim', ft =  {'markdown', 'markdown.pandoc'}, cmd = 'StartMdPreview', config = function()
-			keymap("n", "<leader>pm", ":StartMdPreview<CR>", opts)
-		end }
-	use {'conornewton/vim-pandoc-markdown-preview', ft =  {'markdown', 'markdown.pandoc'}, cmd = 'StartMdPreview'}
+	}, lazy = true },
 
 	-- treesitter
-	use {
+	{
 		'nvim-treesitter/nvim-treesitter',
 		run = ':TSUpdate',
 		config = function()
@@ -717,59 +577,86 @@ require("colortils").setup({
 
 			keymap("n", "<leader>sp", ":TSPlaygroundToggle<CR>", opts)
 		end
-	}
-	use { 'p00f/nvim-ts-rainbow', requires = {'nvim-treesitter/nvim-treesitter'} }
-	use { 'romgrk/nvim-treesitter-context', requires = {'nvim-treesitter/nvim-treesitter'} }
-	use { 'RRethy/nvim-treesitter-textsubjects', requires = {'nvim-treesitter/nvim-treesitter'} }
-	use { 'nvim-treesitter/playground', opt= true, cmd = {'TSPlaygroundToggle'}, requires = {'nvim-treesitter/nvim-treesitter'} }
-	use { 'windwp/nvim-ts-autotag' }
+	},
+	{ 'p00f/nvim-ts-rainbow', dependencies = {'nvim-treesitter/nvim-treesitter'} },
+	{ 'romgrk/nvim-treesitter-context', dependencies = {'nvim-treesitter/nvim-treesitter'} }, -- first line shows ctx
+	{ 'RRethy/nvim-treesitter-textsubjects', dependencies = {'nvim-treesitter/nvim-treesitter'} }, -- context aware selection
+	{ 'nvim-treesitter/playground', lazy= true, cmd = {'TSPlaygroundToggle'}, dependencies = {'nvim-treesitter/nvim-treesitter'} },
+	{ 'windwp/nvim-ts-autotag' },
 
-	-- fun
-	use { 'potamides/pantran.nvim'
+
+
+
+
+
+
+
+	-- file types
+	{ 'cespare/vim-toml',           ft = {'toml'} },
+	{ 'elzr/vim-json',              ft = {'json'} },
+	{ 'vim-scripts/xml.vim',        ft = {'xml'}  },
+	{ 'tpope/vim-markdown',         ft = {'markdown'} },
+	{ 'purescript-contrib/purescript-vim', ft = {'purescript'} },
+	{ 'vmchale/dhall-vim',          ft = {'dhall'} },
+	{ 'ElmCast/elm-vim',            ft = {'elm'} },
+	{ 'lervag/vimtex',          ft = {'latex', 'tex'} },
+	{ 'donRaphaco/neotex',          ft = {'latex', 'tex'}
 		, config = function()
-			local pantran = require("pantran")
-			keymap("n", "<leader>tr", pantran.motion_translate, opts)
-			keymap("n", "<leader>trr", function() return pantran.motion_translate() .. "_" end, opts)
-			keymap("x", "<leader>tr", pantran.motion_translate, opts)
+			g.tex_flavor = 'latex' -- neotex
+			g.vimtex_quickfix_mode=0
+		end
+	},
+	{ 'edwinb/idris2-vim',          ft = {'idris', 'idr'} },
+	{ 'elixir-editors/vim-elixir',  ft = {'elixir'} },
+	{ 'DingDean/wgsl.vim',          ft = {'wgsl'} },
+	{ 'mpickering/hlint-refactor-vim', ft = {'haskell'} },
+	{ 'honza/dockerfile.vim',       ft = {'Dockerfile'} },
+	{'neoclide/vim-jsx-improve',    ft = {'javascript', 'jsx', 'javascript.jsx'} },
+	{ 'kmonad/kmonad-vim',          ft = {'kbd'} }, -- kmonad config
+	{
+        "nvim-neorg/neorg",
+        build = ":Neorg sync-parsers",
+        opts = {
+            load = {
+                ["core.defaults"] = {}, -- Loads default behaviour
+                ["core.norg.concealer"] = {}, -- Adds pretty icons to your documents
+                ["core.norg.dirman"] = { -- Manages Neorg workspaces
+                    config = {
+                        workspaces = {
+                            notes = "~/notes",
+                        },
+                    },
+                },
+            },
+        },
+		lazy = true,
+		ft = "norg",
+        dependencies = { { "nvim-lua/plenary.nvim" } },
+    },
+	{ 'mfussenegger/nvim-dap-python', ft = {'python'}, requires = {'mfussenegger/nvim-dap'}},
+	{ 'dhruvasagar/vim-table-mode'
+		, ft = {'markdown'}
+		, config = function()
+			g.table_mode_corner='+'
+			g.table_mode_corner_corner='+'
+			g.table_mode_header_fillchar='='
+			g.table_mode_align_char = ':'
+
+			g.table_mode_corner_corner='+'
+			g.table_mode_header_fillchar='='
+
 		end,
-	}
-	use { "Pocco81/HighStr.nvim"
-		, config = function()
-			keymap("v", "<F3>", ":<c-u>HSHighlight 1<CR>", opts)
-		end
-	}
-	g.unicoder_cancel_normal = 1
-	g.unicoder_cancel_insert = 1
-	g.unicoder_cancel_visual = 1
-	keymap("n", "<C-y>", ":call unicoder#start(0)<CR>", opts)
-	keymap("n", "<C-y>", "<Esc>:call unicoder#start(1)<CR>", opts)
-	keymap("n", "<C-y>", ":<C-u>call unicoder#selection()<CR>", opts)
-	use {'joom/latex-unicoder.vim'}
+		lazy = true
+	},
+	{ 'rafaqz/citation.vim', ft = {'markdown'}, lazy = true },
 
-	use {
-		'jinh0/eyeliner.nvim',
-		config = function()
-			require'eyeliner'.setup {
-			  highlight_on_key = true
-			}
-		end
-	}
-
-	use {
-	  'kkoomen/vim-doge',
-	  run = ':call doge#install()'
-	}
-
---[[
-  'dense-analysis/ale';
-  --]]
-	g.quickui_border_style = 2
-	g.quickui_color_scheme = 'gruvbox'
-	use 'skywind3000/vim-quickui';
-
-	-- for bootsstrapping packer
-	if packer_bootstrap then
-		require('packer').sync()
-	end
-end)
+	{ 'vim-pandoc/vim-pandoc', ft = {'markdown'} },
+	{ 'vim-pandoc/vim-pandoc-syntax', ft = {'markdown'} },
+	{ 'skywind3000/asyncrun.vim', ft =  {'markdown', 'markdown.pandoc'}, cmd = 'StartMdPreview', config = function()
+		keymap("n", "<leader>pm", ":StartMdPreview<CR>", opts)
+	end },
+	{'conornewton/vim-pandoc-markdown-preview', ft =  {'markdown', 'markdown.pandoc'}, cmd = 'StartMdPreview'},
+	{'skywind3000/vim-quickui', keys={{'<space><space>', 'call quickui#menu#open()'}}, lazy = true},
+	{'joom/latex-unicoder.vim', }
+})
 

@@ -206,8 +206,8 @@ M.set_active = function(self)
 	local git = colors.git .. '%<  %{FugitiveHead()} ' .. colors.git_alt .. self.separators.arrow[1]
 	local position = colors.line_col .. "  %l,↔%c%V%, %P "
 	local file =  colors.active .. ' %f' .. ' %h%m%r%w ' .. colors.git_alt .. self:get_filetype()
-	local location = self:is_truncated(self.trunc_width.diagnostic) and "" or require'nvim-navic'.get_location()
-	return colors.active .. mode .. git .. file .. self:get_lsp_diagnostic() .. colors.bg_alt ..  self.separators.arrow[1] .. '%=' .. colors.inactive .. location .. '%=' .. position
+	local location = self:is_truncated(self.trunc_width.diagnostic) and "" or require('lspsaga.symbolwinbar'):get_winbar() or ""
+	return colors.active .. mode .. git .. file .. self:get_lsp_diagnostic() .. colors.bg_alt ..  self.separators.arrow[1] .. '%=' .. colors.inactive .. location .. colors.inactive .. '%=' .. position
 end
 
 M.set_inactive = function(self)
