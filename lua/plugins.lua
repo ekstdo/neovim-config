@@ -68,7 +68,7 @@ return require('lazy').setup({
 			end
 
 			local lsp_flags = {}
-			-- local capabilities = require('cmp_nvim_lsp').default_capabilities()
+			local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
 			local lspconfig = require('lspconfig')
 			lspconfig['pylsp'].setup{   on_attach = on_attach, flags = lsp_flags  }
@@ -111,11 +111,11 @@ return require('lazy').setup({
 					},
 				},
 			}
-			-- capabilities.textDocument.completion.completionItem.snippetSupport = true
+			capabilities.textDocument.completion.completionItem.snippetSupport = true
 
 			lspconfig.emmet_ls.setup({
 				on_attach = on_attach,
-				-- capabilities = capabilities,
+				capabilities = capabilities,
 				filetypes = { 'html', 'typescriptreact', 'javascriptreact', 'css', 'sass', 'scss', 'less' },
 				init_options = {
 					html = {
@@ -264,7 +264,7 @@ return require('lazy').setup({
 	{ 'hrsh7th/cmp-path', lazy = true, event = "InsertEnter" },
 	{ 'hrsh7th/cmp-cmdline', lazy = true, event = "InsertEnter" },
 	{ 'f3fora/cmp-spell', lazy = true, event = "InsertEnter" },
-	{ 'sirver/ultisnips', 
+	{ 'sirver/ultisnips',
 			requires = { {'nvim-lua/plenary.nvim'} }, --because of plenary path
 			config = function()
 			g.UltiSnipsExpandTrigger = '<tab>'
@@ -448,16 +448,13 @@ return require('lazy').setup({
 					c = "copy window",
 					v = "paste/swap window",
 					e = "ez swap window",
-					t = "tagbar",
 					s = "shell",
 					x = "debugger ui",
-					u = "undotree",
 					p = "tree sitter",
 					d = "drawing"
 				},
 				t = {
 					name = "+text",
-					f = "focus!",
 					c = "duplicate line",
 					g = "grammar check",
 					r = "motion translate",
@@ -510,10 +507,10 @@ return require('lazy').setup({
 		config = function()
 			require('telescope').setup()
 		end, lazy = true, cmd = "Telescope",
-		keys = { {"<leader>nf", ":Telescope find_files<CR>"},
-				{"<leader>nb", ":Telescope buffers<CR>"},
-				{"<leader>ns", ":Telescope live_grep<CR>"},
-				{"<leader>nh", ":Telescope help_tags<CR>"}
+		keys = { {"<leader>nf", ":Telescope find_files<CR>", desc="files"},
+				{"<leader>nb", ":Telescope buffers<CR>", desc="buffers"},
+				{"<leader>ns", ":Telescope live_grep<CR>", desc="strings"},
+				{"<leader>nh", ":Telescope help_tags<CR>", desc="help tags"}
 			}
 	},
 	{ 'nvim-telescope/telescope-bibtex.nvim'
@@ -538,13 +535,13 @@ return require('lazy').setup({
 			keymap("n", "<leader>se", ":call WindowSwap#EasyWindowSwap()<CR>", opts)
 		end
 	},
-	{'wfxr/minimap.vim', cmd = {'Minimap', 'MinimapToggle'}, keys = {{"<leader>sm", ":Minimap<CR>"}} },
+	{'wfxr/minimap.vim', cmd = {'Minimap', 'MinimapToggle'}, keys = {{"<leader>sm", ":Minimap<CR>", desc = "Code Minimap"}} },
 	'kana/vim-metarw', -- fake paths 
-	{'majutsushi/tagbar', lazy = true, cmd = {'Tagbar', 'TagbarToggle'}, keys = {{"<leader>st", ":TagbarToggle<CR>"}} },
-	{'mbbill/undotree', lazy = true, cmd = {'UndoTree', 'UndotreeToggle' }, keys = {{"<leader>su", ":UndotreeToggle<CR>"}} },
+	{'majutsushi/tagbar', lazy = true, cmd = {'Tagbar', 'TagbarToggle'}, keys = {{"<leader>st", ":TagbarToggle<CR>", "Tagbar"}} },
+	{'mbbill/undotree', lazy = true, cmd = {'UndoTree', 'UndotreeToggle' }, keys = {{"<leader>su", ":UndotreeToggle<CR>", "Undotree"}} },
 	{'KabbAmine/vCoolor.vim', lazy = true, cmd = 'VCoolor', keys = {"<leader>fc", ":VCoolor<CR>"}},
 	{'kabbamine/zeavim.vim', lazy = true, keys = { {"<leader>sz", "<Plug>Zeavim"}, '<Plug>Zeavim', '<Plug>ZVVisSelection', '<Plug>ZVOperator', '<Plug>ZVKeyDocset' }, cmd = { 'Zeavim', 'ZeavimV'}},
-	{'is0n/jaq-nvim', keys={{"<leader>sq", ":Jaq<CR>"}}, opts = {
+	{'is0n/jaq-nvim', keys={{"<leader>sq", ":Jaq<CR>", desc="Quickrun"}}, opts = {
 		cmds = {
 			internal = { lua = "luafile %", vim = "source %" },
 			external = { python = "python %", go = "go run %", rust = "cargo run", sh = "sh %" }
@@ -656,7 +653,7 @@ return require('lazy').setup({
 		keymap("n", "<leader>pm", ":StartMdPreview<CR>", opts)
 	end },
 	{'conornewton/vim-pandoc-markdown-preview', ft =  {'markdown', 'markdown.pandoc'}, cmd = 'StartMdPreview'},
-	{'skywind3000/vim-quickui', keys={{'<space><space>', 'call quickui#menu#open()'}}, lazy = true},
+	{'skywind3000/vim-quickui', keys={{'<space><space>', 'call quickui#menu#open()'}, desc="Quickui"}, lazy = true},
 	{'joom/latex-unicoder.vim', }
 })
 

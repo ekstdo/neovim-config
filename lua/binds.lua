@@ -35,14 +35,17 @@ V:P
 P:,
 ,:N
 N:K
-K:V]]
-
-str=interp((BINDINGS == "colemak" and colemak_remap .. [[tt:cc
-ti:ci
-ta:ca
+K:V
 cc:yy
 ci:yi
 ca:ya
+di:di
+tt:cc
+ti:ci
+ta:ca
+]]
+
+str=interp((BINDINGS == "colemak" and colemak_remap .. [[
 <leader>wu:<c-w>k
 <leader>we:<c-w>j
 <leader>wn:<c-w>h
@@ -91,14 +94,12 @@ iExprStr = [[<S-Tab>:pumvisible() ? "\<C-p>" : "\<C-h>"
 ```:```<cr><cr>```<up>]]
 
 iStr = [[<C-Bs>:<C-w>
-"":""
-():()
-[]:[]
-{}:{}
+<C-del>:<C-right><C-w>
 <C-down>:<Esc><Plug>newCursor<CR>
 <C-a>:<Esc>ggVG<CR>
 <C-s>:<Esc>:w<CR>i
 <C-p>:<c-g>u<Esc>[s1z=`]a<c-g>u]]
+
 
 vStr = [[>:>gv
 <C-c>:"+y<Esc>i
