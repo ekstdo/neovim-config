@@ -166,7 +166,7 @@ return require('lazy').setup({
 						return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
 					end,
 					cwd = '${workspaceFolder}',
-					stopOnEntry = false,
+					stopOnEntry = true,
 					args = function ()
 						local t={}
 						local argstring = vim.fn.input("Args: ")
@@ -187,7 +187,7 @@ return require('lazy').setup({
 						return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/target/debug/', 'file')
 					end,
 					cwd = '${workspaceFolder}',
-					stopOnEntry = false,
+					stopOnEntry = true,
 					args = {},
 					runInTerminal = false
 				},
@@ -509,12 +509,12 @@ return require('lazy').setup({
 		requires = { {'nvim-lua/plenary.nvim'} },
 		config = function()
 			require('telescope').setup()
-
-			keymap("n", "<leader>nf", ":Telescope find_files<CR>", opts)
-			keymap("n", "<leader>nb", ":Telescope buffers<CR>", opts)
-			keymap("n", "<leader>ns", ":Telescope live_grep<CR>", opts)
-			keymap("n", "<leader>nh", ":Telescope help_tags<CR>", opts)
-		end, lazy = true, cmd = "Telescope"
+		end, lazy = true, cmd = "Telescope",
+		keys = { {"<leader>nf", ":Telescope find_files<CR>"},
+				{"<leader>nb", ":Telescope buffers<CR>"},
+				{"<leader>ns", ":Telescope live_grep<CR>"},
+				{"<leader>nh", ":Telescope help_tags<CR>"}
+			}
 	},
 	{ 'nvim-telescope/telescope-bibtex.nvim'
 		, requires = { 'nvim-telescope/telescope.nvim' }
