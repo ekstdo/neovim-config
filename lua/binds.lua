@@ -116,4 +116,4 @@ colonIter(function (from, to) vim.api.nvim_set_keymap('', from, to, { noremap = 
 colonIter(function (from, to) vim.api.nvim_set_keymap('i', from, to, { noremap = true }) end, iStr)
 colonIter(function (from, to) vim.api.nvim_set_keymap('v', from, to, { noremap = true }) end, vStr)
 
-
+vim.api.nvim_set_keymap('t', "<Esc>", "<C-\\><C-n>", {noremap = true})

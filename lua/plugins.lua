@@ -85,10 +85,18 @@ return require('lazy').setup({
 			lspconfig['rust_analyzer'].setup{
 				flags = lsp_flags,
 				on_attach = on_attach,
+				settings = {
+					['rust-analyzer'] = {
+						diagnostics = {
+							disable = { "unresolved-proc-macro" }
+						}
+					}
+				}
 			}
 			lspconfig.golangci_lint_ls.setup{}
 			lspconfig.hls.setup{ flags = lsp_flags, on_attach = on_attach }
 			lspconfig['asm_lsp'].setup{ flags = lsp_flags, on_attach = on_attach }
+			lspconfig.svelte.setup{}
 			lspconfig.sumneko_lua.setup {
 				settings = {
 					Lua = {
@@ -219,41 +227,37 @@ return require('lazy').setup({
 	{
 		'glepnir/lspsaga.nvim',
 		event = 'BufRead',
-		config = function()
-			local saga = require("lspsaga")
-
-			saga.setup({
-				-- your configuration
-				border_style = "rounded",
-				outline = {
-					keys = {
-						jump = '<CR>',
-						expand_collapse = "<Tab>"
-					}
-				},
-				ui = { title = false,
-					colors = {
-						title_bg = '#504945',
-						normal_bg = '#504945',
-					}
-				},
-				symbol_in_winbar = {
-					enable = false,
-					color_mode = false,
+		opts = { -- same as require "lspsaga".setup 
+			border_style = "rounded",
+			outline = {
+				keys = {
+					jump = '<CR>',
+					expand_collapse = "<Tab>"
 				}
-			})
-
-			keymap({'n', 'v'}, '<leader>la', "<cmd>Lspsaga code_action<CR>", opts)
-			keymap("n", "gh", "<cmd>Lspsaga lsp_finder<CR>", opts)
-			keymap("n", "gd", "<cmd>Lspsaga peek_definition<CR>", opts)
-			keymap("n", "<space>lr", "<cmd>Lspsaga rename<CR>", opts)
-			keymap("n", "<space>ln", "<cmd>Lspsaga diagnostic_jump_prev<CR>", opts)
-			keymap("n", "<space>lp", "<cmd>Lspsaga diagnostic_jump_next<CR>", opts)
-			keymap("n", "<space>lb", "<cmd>Lspsaga show_buf_diagnostics<CR>", opts)
-			keymap("n", "<space>lo", "<cmd>Lspsaga outline<CR>", opts)
-			keymap("n", BINDINGS == "colemak" and "N" or "K", "<cmd>Lspsaga hover_doc<CR>", opts)
-		end,
-		dependencies = { {'nvim-tree/nvim-web-devicons'} }
+			},
+			ui = { title = false,
+				colors = {
+					title_bg = '#504945',
+					normal_bg = '#504945',
+				}
+			},
+			symbol_in_winbar = {
+				enable = false,
+				color_mode = false,
+			}
+		},
+		dependencies = { {'nvim-tree/nvim-web-devicons'} },
+		keys = {
+			{ '<leader>la', "<cmd>Lspsaga code_action<CR>", mode = {'n', 'v'}, desc = "Code Action", unpack(opts) },
+			{'gh', "<cmd>Lspsaga lsp_finder<CR>", unpack(opts) },
+			{"gd", "<cmd>Lspsaga peek_definition<CR>", unpack(opts)},
+			{BINDINGS == "colemak" and "N" or "K", "<cmd>Lspsaga hover_doc<CR>"},
+			{"<space>lr", "<cmd>Lspsaga rename<CR>", desc="Rename var", unpack(opts)},
+			{"<space>lp", "<cmd>Lspsaga diagnostic_jump_prev<CR>", desc="previous diagnostic", unpack(opts)},
+			{"<space>ln", "<cmd>Lspsaga diagnostic_jump_next<CR>", desc="next diagnostic", unpack(opts)},
+			{"<space>lb", "<cmd>Lspsaga show_buf_diagnostics<CR>", desc="buffer diagnostics", unpack(opts)},
+			{"<space>lo", "<cmd>Lspsaga outline<CR>", desc="Outline", unpack(opts)}
+		}
 	},
 	{ 'mfussenegger/nvim-jdtls', ft = {'java'}, config = function()
 		end
@@ -266,12 +270,13 @@ return require('lazy').setup({
 	{ 'f3fora/cmp-spell', lazy = true, event = "InsertEnter" },
 	{ 'sirver/ultisnips',
 			requires = { {'nvim-lua/plenary.nvim'} }, --because of plenary path
+			keys = {"<leader>cs", ":UltiSnipsEdit<CR>", desc="snippets", unpack(opts)},
+			lazy = false,
 			config = function()
 			g.UltiSnipsExpandTrigger = '<tab>'
 			g.UltiSnipsJumpForwardTrigger = '<tab>'
 			g.UltiSnipsJumpBackwardTrigger = '<s-tab>'
 			g.UltiSnipsSnippetDirectories={ g.CURRENT_CONFIG_FOLDER .. '/ultisnippets' }
-			keymap("n", "<leader>cs", ":UltiSnipsEdit<CR>", opts)
 		end
 	},
 	{ 'quangnguyen30192/cmp-nvim-ultisnips', lazy = true, event = "InsertEnter" },
@@ -347,7 +352,7 @@ return require('lazy').setup({
 
 	-- utilities while writing
 	{ 'junegunn/limelight.vim'
-		, keys = {{"<space>tf", "<cmd>Limelight!!<CR>", desc="focus mode"}}, lazy = true, cmd = { "Limelight" }
+		, keys = {{"<space>tf", "<cmd>Limelight!!<CR>", desc="focus mode"}, unpack(opts) }, lazy = true, cmd = { "Limelight" }
 		, config = function ()
 			-- Color name (:help cterm-colors) or ANSI code
 			g.limelight_conceal_ctermfg = 'gray'
@@ -360,12 +365,12 @@ return require('lazy').setup({
 	'junegunn/vim-easy-align',
 	{'mg979/vim-visual-multi', config = function()
 		g.VM_mouse_mappings = 1
-	end, keys = {{"<C-down>", "<Plug>newCursor<CR>"}}},
+	end, keys = {{"<C-down>", "<Plug>newCursor<CR>", unpack(opts)}}},
 	{"ziontee113/color-picker.nvim",
-		setup = true, lazy = true, keys = {{"<space><C-c>", "<cmd>PickColor<cr>", desc = "Color Picker"}}
+		setup = true, lazy = true, keys = {{"<space>s", ":PickColor<cr>", desc = "Color Picker"}}
 	},
 	{'rhysd/vim-grammarous', lazy = true,
-		keys = {{"<space>tg", "<cmd>GrammarousCheck<CR>", desc = "Grammar checker"}}, cmd = {'GrammarousCheck'} },
+		keys = {{"<space>tg", "<cmd>GrammarousCheck<CR>", desc = "Grammar checker", unpack(opts)}}, cmd = {'GrammarousCheck'} },
 	{ 'folke/todo-comments.nvim', setup = true },
 	{ 'norcalli/nvim-colorizer.lua', setup = true },
 	'honza/vim-snippets',
@@ -388,7 +393,7 @@ return require('lazy').setup({
 		end,
 		lazy = true,
 		cmd = {"NvimTreeOpen", "NvimTreeToggle"},
-		keys = {{"<space>sf", "<cmd>NvimTreeToggle<CR>", desc="file tree"}}
+		keys = {{"<space>sf", "<cmd>NvimTreeToggle<CR>", desc="file tree", unpack(opts)}}
 
 	}, -- file tree
 	{'akinsho/bufferline.nvim', tag = "v3.*", dependencies = { 'nvim-tree/nvim-web-devicons' }
@@ -417,7 +422,6 @@ return require('lazy').setup({
 				c = {
 					name = "+config",
 					m = 'main config',
-					s = "snippets"
 				},
 				f = {
 					name = "+funky",
@@ -507,10 +511,10 @@ return require('lazy').setup({
 		config = function()
 			require('telescope').setup()
 		end, lazy = true, cmd = "Telescope",
-		keys = { {"<leader>nf", ":Telescope find_files<CR>", desc="files"},
-				{"<leader>nb", ":Telescope buffers<CR>", desc="buffers"},
-				{"<leader>ns", ":Telescope live_grep<CR>", desc="strings"},
-				{"<leader>nh", ":Telescope help_tags<CR>", desc="help tags"}
+		keys = { {"<leader>nf", ":Telescope find_files<CR>", desc="files", unpack(opts)},
+				{"<leader>nb", ":Telescope buffers<CR>", desc="buffers", unpack(opts)},
+				{"<leader>ns", ":Telescope live_grep<CR>", desc="strings", unpack(opts)},
+				{"<leader>nh", ":Telescope help_tags<CR>", desc="help tags", unpack(opts)}
 			}
 	},
 	{ 'nvim-telescope/telescope-bibtex.nvim'
@@ -539,7 +543,7 @@ return require('lazy').setup({
 	'kana/vim-metarw', -- fake paths 
 	{'majutsushi/tagbar', lazy = true, cmd = {'Tagbar', 'TagbarToggle'}, keys = {{"<leader>st", ":TagbarToggle<CR>", "Tagbar"}} },
 	{'mbbill/undotree', lazy = true, cmd = {'UndoTree', 'UndotreeToggle' }, keys = {{"<leader>su", ":UndotreeToggle<CR>", "Undotree"}} },
-	{'KabbAmine/vCoolor.vim', lazy = true, cmd = 'VCoolor', keys = {"<leader>fc", ":VCoolor<CR>"}},
+	{'KabbAmine/vCoolor.vim', lazy = true, cmd = 'VCoolor', keys = {"<leader>fc", ":VCoolor<CR>", desc="Color picker"}},
 	{'kabbamine/zeavim.vim', lazy = true, keys = { {"<leader>sz", "<Plug>Zeavim"}, '<Plug>Zeavim', '<Plug>ZVVisSelection', '<Plug>ZVOperator', '<Plug>ZVKeyDocset' }, cmd = { 'Zeavim', 'ZeavimV'}},
 	{'is0n/jaq-nvim', keys={{"<leader>sq", ":Jaq<CR>", desc="Quickrun"}}, opts = {
 		cmds = {
