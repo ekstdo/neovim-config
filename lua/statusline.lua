@@ -159,7 +159,7 @@ local set_hl = function(group, options)
 end
 
 local universal_bg = '#504945'
-local universal_bg_dark = '#3C3836'
+local universal_bg_dark = '#1D2021'
 local dark_font = '#1D2021'
 local bright_font = '#FFFFFF'
 function update_colors()

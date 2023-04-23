@@ -71,18 +71,18 @@ return require('lazy').setup({
 			local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
 			local lspconfig = require('lspconfig')
-			lspconfig['pylsp'].setup{   on_attach = on_attach, flags = lsp_flags  }
-			lspconfig['tsserver'].setup{  on_attach = on_attach, flags = lsp_flags   }
-			lspconfig['elixirls'].setup{  cmd = { "elixir-ls" }, on_attach = on_attach   }
-			lspconfig['clangd'].setup{    flags = lsp_flags, on_attach = on_attach   }
-			lspconfig['wgsl_analyzer'].setup{    flags = lsp_flags, on_attach = on_attach   }
-			lspconfig['texlab'].setup{
+			lspconfig.pylsp.setup{   on_attach = on_attach, flags = lsp_flags  }
+			lspconfig.tsserver.setup{  on_attach = on_attach, flags = lsp_flags   }
+			lspconfig.elixirls.setup{  cmd = { "elixir-ls" }, on_attach = on_attach   }
+			lspconfig.clangd.setup{    flags = lsp_flags, on_attach = on_attach   }
+			lspconfig.wgsl_analyzer.setup{    flags = lsp_flags, on_attach = on_attach   }
+			lspconfig.texlab.setup{
 				flags = lsp_flags,
 				on_attach = on_attach,
 				filetypes = { "tex", "plaintex", "bib", "markdown" }
 			}
 
-			lspconfig['rust_analyzer'].setup{
+			lspconfig.rust_analyzer.setup{
 				flags = lsp_flags,
 				on_attach = on_attach,
 				settings = {
@@ -95,9 +95,10 @@ return require('lazy').setup({
 			}
 			lspconfig.golangci_lint_ls.setup{}
 			lspconfig.hls.setup{ flags = lsp_flags, on_attach = on_attach }
-			lspconfig['asm_lsp'].setup{ flags = lsp_flags, on_attach = on_attach }
+			lspconfig.asm_lsp.setup{ flags = lsp_flags, on_attach = on_attach }
 			lspconfig.svelte.setup{}
-			lspconfig.sumneko_lua.setup {
+			lspconfig.typst_lsp.setup{}
+			lspconfig.lua_ls.setup {
 				settings = {
 					Lua = {
 						runtime = {
@@ -149,16 +150,10 @@ return require('lazy').setup({
 	},-- lsp config
 	{'williamboman/mason.nvim', config = function()
 		require("mason").setup()
-	end}, -- lsp installer
+	end, lazy = true, cmd = { "Mason", "MasonUpdate", "MasonInstall", "MasonUninstall", "MasonUninstallAll", "MasonLog" } }, -- lsp installer
 	{ 'mfussenegger/nvim-dap', config = function () -- debugger
 			local dap = require("dap")
 
-			keymap("n", "<space>db", function() dap.toggle_breakpoint() end, opts)
-			keymap("n", "<space>dB", function() dap.set_breakpoint(vim.fn.input('Breakpoint condition: ')) end, opts)
-			keymap("n", "<space>dc", function() dap.continue() end, opts)
-			keymap("n", "<space>ds", function() dap.step_over() end, opts)
-			keymap("n", "<space>di", function() dap.step_into() end, opts)
-			keymap("n", "<space>dr", function() dap.repl.open() end, opts)
 			dap.adapters.lldb = {
 				type = 'executable',
 				command = '/usr/bin/lldb-vscode', -- adjust as needed, must be absolute path
@@ -200,7 +195,16 @@ return require('lazy').setup({
 					runInTerminal = false
 				},
 			}
-		end
+		end,
+		keys = {
+			{ "<space>db", function() require"dap".toggle_breakpoint() end, unpack(opts) },
+			{ "<space>dB", function() require"dap".set_breakpoint(vim.fn.input('Breakpoint condition: ')) end, unpack(opts) },
+			{ "<space>dc", function() require"dap".continue() end, unpack(opts) },
+			{ "<space>ds", function() require"dap".step_over() end, unpack(opts) },
+			{ "<space>di", function() require"dap".step_into() end, unpack(opts) },
+			{ "<space>dr", function() require"dap".repl.open() end, unpack(opts) },
+		},
+		lazy = true
 
 	},
 
@@ -376,7 +380,6 @@ return require('lazy').setup({
 	'honza/vim-snippets',
 	'tpope/vim-commentary',
 	{ 'chrisbra/NrrwRgn', cmd = {'NR', 'NW', 'NRP', 'NRM'} },
-	{'windwp/nvim-autopairs', setup=true},
 	'lambdalisue/suda.vim',
 
 
@@ -614,6 +617,7 @@ return require('lazy').setup({
 	{ 'honza/dockerfile.vim',       ft = {'Dockerfile'} },
 	{'neoclide/vim-jsx-improve',    ft = {'javascript', 'jsx', 'javascript.jsx'} },
 	{ 'kmonad/kmonad-vim',          ft = {'kbd'} }, -- kmonad config
+	{ 'kaarmu/typst.vim', ft = 'typst'},
 	{
         "nvim-neorg/neorg",
         build = ":Neorg sync-parsers",
@@ -658,6 +662,22 @@ return require('lazy').setup({
 	end },
 	{'conornewton/vim-pandoc-markdown-preview', ft =  {'markdown', 'markdown.pandoc'}, cmd = 'StartMdPreview'},
 	{'skywind3000/vim-quickui', keys={{'<space><space>', 'call quickui#menu#open()'}, desc="Quickui"}, lazy = true},
-	{'joom/latex-unicoder.vim', }
+	{'joom/latex-unicoder.vim', },
+
+
+	{ 'Bekaboo/deadcolumn.nvim', config = function()
+		set.colorcolumn = "72"
+		require('deadcolumn').setup({warning = { hlgroup = {'Error', 'foreground'} } })
+	end },
+	{ 'giusgad/pets.nvim',
+		dependencies = { "MunifTanjim/nui.nvim", "giusgad/hologram.nvim" },
+		config = function () 
+			require("pets").setup{}
+		end,
+		keys = {{'<space>fp', '<cmd>PetsNew yeeeee<cr>', desc = 'new pet :D'},
+		},
+		lazy = true,
+		cmd = {'PetsNew', 'PetsNewCustom'}
+	}
 })
 

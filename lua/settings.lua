@@ -11,6 +11,8 @@ run("set foldcolumn=1")
 set.hidden = true
 set.wrap=false
 
+set.colorcolumn = "72"
+set.textwidth = "72"
 
 g.mapleader = ' '
 g.maplocalleader = ','
