@@ -2,8 +2,8 @@ require "utils"
 
 run("set cursorline")
 run("set cursorcolumn")
-g.gruvbox_italic = 1
 vim.cmd.colorscheme "gruvbox"
+g.gruvbox_italic = 1
 run("set number")
 -- run("hi Normal guibg=NONE ctermbg=NONE")
 set.conceallevel = 1

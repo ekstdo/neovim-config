@@ -4,7 +4,6 @@ require "binds"
 
 opts = {noremap = true, silent = true}
 
--- run("autocmd BufWritePost plugins.lua luafile plugins.lua | PackerCompile")
 
 
 g.table_mode_map_prefix = '<space>T'
@@ -19,15 +18,49 @@ end
 
 g.tagbar_position = "rightbelow"
 
-return require('lazy').setup({
-	-- FABULOUS
-	'morhetz/gruvbox', -- colorscheme
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local plugin_setups = {
+	-- {{{ COMMON DEPENDENCIES
 	'nvim-tree/nvim-web-devicons', -- icons
-
-
 	'nvim-lua/plenary.nvim', -- utility functions
+	-- }}}
 
+	-- {{{ DEVELOPER ESSENTIALS
 	'tpope/vim-fugitive', -- git integration
+	--  }}}
+
+
+	-- {{{ FABULOUS
+	'morhetz/gruvbox', -- colorscheme
+	-- ]}}
+
+	-- {{{ LSP & DAP 
 	{'neovim/nvim-lspconfig',
 		config = function()
 
@@ -98,6 +131,7 @@ return require('lazy').setup({
 			lspconfig.asm_lsp.setup{ flags = lsp_flags, on_attach = on_attach }
 			lspconfig.svelte.setup{}
 			lspconfig.typst_lsp.setup{}
+			lspconfig.csharp_ls.setup{}
 			lspconfig.lua_ls.setup {
 				settings = {
 					Lua = {
@@ -136,6 +170,7 @@ return require('lazy').setup({
 				}
 			})
 
+
 			vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
 				vim.lsp.diagnostic.on_publish_diagnostics,
 				{
@@ -147,10 +182,11 @@ return require('lazy').setup({
 				}
 			) -- removes virtual text 
 		end
-	},-- lsp config
+	, dependencies = { 'williamboman/mason-lspconfig.nvim' }},-- lsp config
 	{'williamboman/mason.nvim', config = function()
 		require("mason").setup()
-	end, lazy = true, cmd = { "Mason", "MasonUpdate", "MasonInstall", "MasonUninstall", "MasonUninstallAll", "MasonLog" } }, -- lsp installer
+	end, cmd = { "Mason", "MasonUpdate", "MasonInstall", "MasonUninstall", "MasonUninstallAll", "MasonLog" } }, -- lsp installer
+	{'williamboman/mason-lspconfig.nvim', setup=true, dependencies= { 'williamboman/mason.nvim'} },
 	{ 'mfussenegger/nvim-dap', config = function () -- debugger
 			local dap = require("dap")
 
@@ -193,6 +229,22 @@ return require('lazy').setup({
 					stopOnEntry = true,
 					args = {},
 					runInTerminal = false
+				},
+			}
+			dap.adapters.coreclr = {
+				type = 'executable',
+				command = '/Users/anhthu/.local/share/nvim/mason/bin/netcoredbg',
+				args = {'--interpreter=vscode'}
+			}
+
+			dap.configurations.cs = {
+				{
+					type = "coreclr",
+					name = "launch - netcoredbg",
+					request = "launch",
+					program = function()
+						return vim.fn.input('Path to dll', vim.fn.getcwd() .. '/bin/Debug/', 'file')
+					end,
 				},
 			}
 		end,
@@ -280,7 +332,7 @@ return require('lazy').setup({
 			g.UltiSnipsExpandTrigger = '<tab>'
 			g.UltiSnipsJumpForwardTrigger = '<tab>'
 			g.UltiSnipsJumpBackwardTrigger = '<s-tab>'
-			g.UltiSnipsSnippetDirectories={ g.CURRENT_CONFIG_FOLDER .. '/ultisnippets' }
+			g.UltiSnipsSnippetDirectories={ g.CURRENT_CONFIG_FOLDER .. 'ultisnippets' }
 		end
 	},
 	{ 'quangnguyen30192/cmp-nvim-ultisnips', lazy = true, event = "InsertEnter" },
@@ -301,10 +353,6 @@ return require('lazy').setup({
 				},
 			})
 		end
-	},
-	{
-		"windwp/nvim-autopairs",
-		config = function() require("nvim-autopairs").setup {} end
 	},
 	{'tzachar/cmp-tabnine', build='./install.sh', dependencies = { 'hrsh7th/nvim-cmp', 'onsails/lspkind.nvim' }
 		, config = function()
@@ -333,10 +381,11 @@ return require('lazy').setup({
 				},
 				sources = cmp.config.sources({
 						{ name = 'nvim_lsp_signature_help' },
+						-- { name = "codeium" },
 						{ name = 'path' },
 						{ name = 'nvim_lsp', keyword_length = 2 },
 						{ name = 'ultisnips' },
-						{ name = 'cmp_tabnine' },
+						-- { name = 'cmp_tabnine' },
 				}, {{ name = 'buffer', keyword_length = 3 }, { name = 'spell' }}),
 				formatting = {
 					format = lspkind.cmp_format({})
@@ -354,7 +403,13 @@ return require('lazy').setup({
 		end
 	, lazy = true, event = "InsertEnter"},
 
-	-- utilities while writing
+	-- }}}
+	{
+		"windwp/nvim-autopairs",
+		config = function() require("nvim-autopairs").setup {} end
+	},
+
+	-- {{{ utilities while writing
 	{ 'junegunn/limelight.vim'
 		, keys = {{"<space>tf", "<cmd>Limelight!!<CR>", desc="focus mode"}, unpack(opts) }, lazy = true, cmd = { "Limelight" }
 		, config = function ()
@@ -381,8 +436,9 @@ return require('lazy').setup({
 	'tpope/vim-commentary',
 	{ 'chrisbra/NrrwRgn', cmd = {'NR', 'NW', 'NRP', 'NRM'} },
 	'lambdalisue/suda.vim',
+	-- }}}
 
-
+	-- {{{ UI Utilities
 	{ 'tweekmonster/startuptime.vim', lazy = true, cmd = { "StartupTime"}}, -- timer
 	{ 'mhinz/vim-startify' , config = function()
 			g.startify_bookmarks={ { t = '~/.todo.md' }, { c = '~/.config/nvim/init.lua' }, { k = '~/.config/kitty/kitty.conf' }, { z = '~/.zshrc' } }
@@ -411,7 +467,7 @@ return require('lazy').setup({
 			}
 		end
 	}, -- bufferline
-
+	-- }}}
 
 
 	{ 'folke/which-key.nvim'
@@ -555,7 +611,7 @@ return require('lazy').setup({
 		}
 	}, lazy = true },
 
-	-- treesitter
+	-- {{{ TREESITTER PLUGINS
 	{
 		'nvim-treesitter/nvim-treesitter',
 		run = ':TSUpdate',
@@ -578,24 +634,20 @@ return require('lazy').setup({
 					},
 				},
 			}
-
-			keymap("n", "<leader>sp", ":TSPlaygroundToggle<CR>", opts)
-		end
+		end,
 	},
 	{ 'p00f/nvim-ts-rainbow', dependencies = {'nvim-treesitter/nvim-treesitter'} },
 	{ 'romgrk/nvim-treesitter-context', dependencies = {'nvim-treesitter/nvim-treesitter'} }, -- first line shows ctx
 	{ 'RRethy/nvim-treesitter-textsubjects', dependencies = {'nvim-treesitter/nvim-treesitter'} }, -- context aware selection
-	{ 'nvim-treesitter/playground', lazy= true, cmd = {'TSPlaygroundToggle'}, dependencies = {'nvim-treesitter/nvim-treesitter'} },
+	{ 'nvim-treesitter/playground',
+		lazy= true,
+		cmd = {'TSPlaygroundToggle'},
+		dependencies = {'nvim-treesitter/nvim-treesitter'},
+		keys = {{"<leader>sp", ":TSPlaygroundToggle<CR>", desc = "TS Playground" }}
+	},
 	{ 'windwp/nvim-ts-autotag' },
-
-
-
-
-
-
-
-
-	-- file types
+	-- }}} 
+	-- {{{ FILE TYPE SPECIFICS
 	{ 'cespare/vim-toml',           ft = {'toml'} },
 	{ 'elzr/vim-json',              ft = {'json'} },
 	{ 'vim-scripts/xml.vim',        ft = {'xml'}  },
@@ -619,25 +671,25 @@ return require('lazy').setup({
 	{ 'kmonad/kmonad-vim',          ft = {'kbd'} }, -- kmonad config
 	{ 'kaarmu/typst.vim', ft = 'typst'},
 	{
-        "nvim-neorg/neorg",
-        build = ":Neorg sync-parsers",
-        opts = {
-            load = {
-                ["core.defaults"] = {}, -- Loads default behaviour
-                ["core.norg.concealer"] = {}, -- Adds pretty icons to your documents
-                ["core.norg.dirman"] = { -- Manages Neorg workspaces
-                    config = {
-                        workspaces = {
-                            notes = "~/notes",
-                        },
-                    },
-                },
-            },
-        },
+		"nvim-neorg/neorg",
+		build = ":Neorg sync-parsers",
+		opts = {
+			load = {
+				["core.defaults"] = {}, -- Loads default behaviour
+				["core.norg.concealer"] = {}, -- Adds pretty icons to your documents
+				["core.norg.dirman"] = { -- Manages Neorg workspaces
+					config = {
+						workspaces = {
+							notes = "~/notes",
+						},
+					},
+				},
+			},
+		},
 		lazy = true,
 		ft = "norg",
-        dependencies = { { "nvim-lua/plenary.nvim" } },
-    },
+		dependencies = { { "nvim-lua/plenary.nvim" } },
+	},
 	{ 'mfussenegger/nvim-dap-python', ft = {'python'}, requires = {'mfussenegger/nvim-dap'}},
 	{ 'dhruvasagar/vim-table-mode'
 		, ft = {'markdown'}
@@ -661,23 +713,78 @@ return require('lazy').setup({
 		keymap("n", "<leader>pm", ":StartMdPreview<CR>", opts)
 	end },
 	{'conornewton/vim-pandoc-markdown-preview', ft =  {'markdown', 'markdown.pandoc'}, cmd = 'StartMdPreview'},
-	{'skywind3000/vim-quickui', keys={{'<space><space>', 'call quickui#menu#open()'}, desc="Quickui"}, lazy = true},
-	{'joom/latex-unicoder.vim', },
-
+	-- }}}
 
 	{ 'Bekaboo/deadcolumn.nvim', config = function()
 		set.colorcolumn = "72"
 		require('deadcolumn').setup({warning = { hlgroup = {'Error', 'foreground'} } })
 	end },
-	{ 'giusgad/pets.nvim',
-		dependencies = { "MunifTanjim/nui.nvim", "giusgad/hologram.nvim" },
-		config = function () 
-			require("pets").setup{}
-		end,
-		keys = {{'<space>fp', '<cmd>PetsNew yeeeee<cr>', desc = 'new pet :D'},
-		},
-		lazy = true,
-		cmd = {'PetsNew', 'PetsNewCustom'}
+
+	-- {
+	-- 	"jcdickinson/codeium.nvim",
+	-- 	dependencies = {
+	-- 		"nvim-lua/plenary.nvim",
+	-- 		"hrsh7th/nvim-cmp",
+	-- 	},
+	-- 	config = function()
+	-- 		require("codeium").setup({
+	-- 		})
+	-- 	end
+	-- }
+}
+
+-- {{{ Helper functions for organizing
+plugin_setups.__index = plugin_setups
+plugin_setups.insert = function(a) 
+	table.insert(a, b)
+end
+
+function plugin_setups:load() 
+	require('lazy').setup(self)
+end
+
+function plugin_setups:insert(a)
+	table.insert(self, a)
+end
+
+function plugin_setups:concat(a)
+	for k, v in pairs(a) do
+		table.insert(self, v)
+	end
+end
+-- }}}
+
+-- FUN PLUGINS
+plugin_setups:concat {
+	-- {{{ pets 
+	{ 'giusgad/pets.nvim'
+	, dependencies = { "MunifTanjim/nui.nvim", "giusgad/hologram.nvim" }
+	, config = function () 
+		require("pets").setup{}
+	end
+	, keys = {{'<space>fp', '<cmd>PetsNew yeeeee<cr>', desc = 'new pet :D'},
 	}
-})
+	, lazy = true
+	, cmd = {'PetsNew', 'PetsNewCustom'}
+	}
+, -- }}}
+	-- {{{ LaTeX To unicode 
+	{'joom/latex-unicoder.vim'
+	, keys = {
+		{'<space>fu', ":call unicoder#start(0)<CR>", desc = "convert LaTeX to unicode"}
+	} },
+	-- }}}
+	-- {{{ some UI 
+	{'skywind3000/vim-quickui', keys={{'<space><space>', ':call quickui#menu#open()<CR>'}, desc="Quickui"}, lazy = true},
+	-- }}}
+}
+
+
+
+
+
+
+
+
+return plugin_setups
 
