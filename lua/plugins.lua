@@ -385,7 +385,7 @@ local plugin_setups = {
 						{ name = 'path' },
 						{ name = 'nvim_lsp', keyword_length = 2 },
 						{ name = 'ultisnips' },
-						-- { name = 'cmp_tabnine' },
+						{ name = 'cmp_tabnine' },
 				}, {{ name = 'buffer', keyword_length = 3 }, { name = 'spell' }}),
 				formatting = {
 					format = lspkind.cmp_format({})
@@ -565,7 +565,7 @@ local plugin_setups = {
 		end
 	},
 	{
-		'nvim-telescope/telescope.nvim', tag = '0.1.0',
+		'nvim-telescope/telescope.nvim', tag = '0.1.4',
 		requires = { {'nvim-lua/plenary.nvim'} },
 		config = function()
 			require('telescope').setup()
@@ -633,6 +633,9 @@ local plugin_setups = {
 						['i;'] = 'textsubjects-container-inner',
 					},
 				},
+				highlight = {
+					enable = true,
+				}
 			}
 		end,
 	},
