@@ -122,3 +122,19 @@ function printSynstack()
 		print(index, "\t", data, "\t", vim.fn.synIDattr(data, "name"), "\t", vim.fn.synIDattr(vim.fn.synIDtrans(data), "name"))
 	end
 end
+
+function isModuleAvailable(name)
+	if package.loaded[name] then
+		return true
+	else
+	for _, searcher in ipairs(package.searchers or package.loaders) do
+		local loader = searcher(name)
+			if type(loader) == 'function' then
+				package.preload[name] = loader
+			return true
+		end
+	end
+		return false
+	end
+end
+
