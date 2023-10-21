@@ -104,7 +104,7 @@ local plugin_setups = {
 			local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
 			local lspconfig = require('lspconfig')
-			lspconfig.pylsp.setup{   on_attach = on_attach, flags = lsp_flags  }
+			lspconfig.pyright.setup{   on_attach = on_attach, flags = lsp_flags  }
 			lspconfig.tsserver.setup{  on_attach = on_attach, flags = lsp_flags   }
 			lspconfig.elixirls.setup{  cmd = { "elixir-ls" }, on_attach = on_attach   }
 			lspconfig.clangd.setup{    flags = lsp_flags, on_attach = on_attach   }
