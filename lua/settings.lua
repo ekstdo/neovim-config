@@ -53,7 +53,7 @@ g.tagbar_type_elixir = {
      kind2scope = {
          p = 'protocol',
          m = 'module'
-	 },
+   },
      scope2kind = {
          protocol = 'p',
          module = 'm'
@@ -76,3 +76,13 @@ g.matchparen_insert_timeout = 20
 g.CURRENT_CONFIG_FOLDER = string.gsub(os.getenv("MYVIMRC") or "~/.config/nvim/", "/[^/]*$", "/", 1)
 
 g.gruvbox_contrast_dark = "hard"
+
+autocmd(
+  {"BufRead", "BufNewFile"},
+  {
+      pattern = '*.typ',
+      callback = function()
+          vim.opt_local.ft = "typst"
+      end,
+      group = numbertogglegroup
+  })

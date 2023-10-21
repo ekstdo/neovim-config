@@ -138,3 +138,4 @@ function isModuleAvailable(name)
 	end
 end
 
+autocmd = vim.api.nvim_create_autocmd
