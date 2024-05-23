@@ -12,7 +12,7 @@ set.hidden = true
 set.wrap=false
 
 set.colorcolumn = "72"
-set.textwidth = "72"
+set.textwidth = 72
 
 g.mapleader = ' '
 g.maplocalleader = ','

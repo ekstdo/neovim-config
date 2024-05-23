@@ -2,7 +2,7 @@ require "utils"
 
 run("set cursorline")
 run("set cursorcolumn")
-vim.cmd.colorscheme "gruvbox"
+vim.cmd.colorscheme "leaf"
 g.gruvbox_italic = 1
 run("set number")
 -- run("hi Normal guibg=NONE ctermbg=NONE")

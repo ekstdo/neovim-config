@@ -58,6 +58,7 @@ local plugin_setups = {
 
 	-- {{{ FABULOUS
 	'morhetz/gruvbox', -- colorscheme
+	{'daschw/leaf.nvim', opts = {contrast = "medium"}}, -- colorscheme
 	-- ]}}
 
 	-- {{{ LSP & DAP 
@@ -104,10 +105,11 @@ local plugin_setups = {
 			local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
 			local lspconfig = require('lspconfig')
-			lspconfig.pyright.setup{   on_attach = on_attach, flags = lsp_flags  }
+			lspconfig.pylsp.setup{}
 			lspconfig.tsserver.setup{  on_attach = on_attach, flags = lsp_flags   }
 			lspconfig.elixirls.setup{  cmd = { "elixir-ls" }, on_attach = on_attach   }
 			lspconfig.clangd.setup{    flags = lsp_flags, on_attach = on_attach   }
+			lspconfig.slint_lsp.setup{    flags = lsp_flags, on_attach = on_attach   }
 			lspconfig.wgsl_analyzer.setup{    flags = lsp_flags, on_attach = on_attach   }
 			lspconfig.texlab.setup{
 				flags = lsp_flags,
@@ -118,19 +120,29 @@ local plugin_setups = {
 			lspconfig.rust_analyzer.setup{
 				flags = lsp_flags,
 				on_attach = on_attach,
-				settings = {
-					['rust-analyzer'] = {
-						diagnostics = {
-							disable = { "unresolved-proc-macro" }
-						}
-					}
-				}
+				-- settings = {
+				-- 	['rust-analyzer'] = {
+				-- 		diagnostics = {
+				-- 			disable = { "unresolved-proc-macro" }
+				-- 		}
+				-- 	}
+				-- }
 			}
 			lspconfig.golangci_lint_ls.setup{}
 			lspconfig.hls.setup{ flags = lsp_flags, on_attach = on_attach }
 			lspconfig.asm_lsp.setup{ flags = lsp_flags, on_attach = on_attach }
 			lspconfig.svelte.setup{}
-			lspconfig.typst_lsp.setup{}
+			lspconfig.typst_lsp.setup{
+				settings = {
+					exportPdf = "onType" -- Choose onType, onSave or never.
+					-- serverPath = "" -- Normally, there is no need to uncomment it.
+				}
+			}
+			lspconfig.tinymist.setup{
+				root_dir = function()
+					return vim.fn.getcwd()
+				end,
+			}
 			lspconfig.csharp_ls.setup{}
 			lspconfig.lua_ls.setup {
 				settings = {
@@ -156,19 +168,10 @@ local plugin_setups = {
 			}
 			capabilities.textDocument.completion.completionItem.snippetSupport = true
 
-			lspconfig.emmet_ls.setup({
-				on_attach = on_attach,
-				capabilities = capabilities,
-				filetypes = { 'html', 'typescriptreact', 'javascriptreact', 'css', 'sass', 'scss', 'less' },
-				init_options = {
-					html = {
-						options = {
-							-- For possible options, see: https://github.com/emmetio/emmet/blob/master/src/config.ts#L79-L267
-							["bem.enabled"] = true,
-						},
-					},
-				}
-			})
+			lspconfig.emmet_language_server.setup{
+				filetypes = { "css", "eruby", "html", "javascript", "javascriptreact", "less", "sass", "scss", "pug", "typescriptreact" },
+			}
+
 
 
 			vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
@@ -261,6 +264,7 @@ local plugin_setups = {
 	},
 
 	{ 'theHamsta/nvim-dap-virtual-text', requires = {'mfussenegger/nvim-dap'}},
+	{ "nvim-neotest/nvim-nio" },
 	{ 'rcarriga/nvim-dap-ui', requires = {'mfussenegger/nvim-dap'}, config = function ()
 		local dap, dapui = require("dap"), require("dapui")
 		dapui.setup()
@@ -279,7 +283,7 @@ local plugin_setups = {
 		keymap("n", BINDINGS == "colemak" and"<M-n>" or "<M-k>", "<Cmd>lua require(\"dapui\").eval()<CR>", opts)
 	end},
 
-	'jose-elias-alvarez/null-ls.nvim', -- linter and formatter
+	'nvimtools/none-ls.nvim', -- linter and formatter
 	{
 		'glepnir/lspsaga.nvim',
 		event = 'BufRead',
@@ -381,14 +385,19 @@ local plugin_setups = {
 				},
 				sources = cmp.config.sources({
 						{ name = 'nvim_lsp_signature_help' },
-						-- { name = "codeium" },
+						{ name = "codeium" },
 						{ name = 'path' },
 						{ name = 'nvim_lsp', keyword_length = 2 },
 						{ name = 'ultisnips' },
 						{ name = 'cmp_tabnine' },
 				}, {{ name = 'buffer', keyword_length = 3 }, { name = 'spell' }}),
 				formatting = {
-					format = lspkind.cmp_format({})
+					format = lspkind.cmp_format({
+						mode = "symbol",
+						maxwidth = 50,
+						ellipsis_char = '...',
+						symbol_map = { Codeium = "", }
+					})
 				},
 				experimental = {
 					ghost_text = true
@@ -402,6 +411,18 @@ local plugin_setups = {
 			)
 		end
 	, lazy = true, event = "InsertEnter"},
+	{
+		"Exafunction/codeium.nvim",
+		dependencies = {
+			"nvim-lua/plenary.nvim",
+			"hrsh7th/nvim-cmp",
+		},
+		config = function()
+			require("codeium").setup({
+			})
+		end,
+		lazy = true, event = "InsertEnter"
+	},
 
 	-- }}}
 	{
@@ -442,6 +463,7 @@ local plugin_setups = {
 	{ 'tweekmonster/startuptime.vim', lazy = true, cmd = { "StartupTime"}}, -- timer
 	{ 'mhinz/vim-startify' , config = function()
 			g.startify_bookmarks={ { t = '~/.todo.md' }, { c = '~/.config/nvim/init.lua' }, { k = '~/.config/kitty/kitty.conf' }, { z = '~/.zshrc' } }
+			g.startify_change_to_dir = 0
 		end
 	}, -- start menu
 	{ 'nvim-tree/nvim-tree.lua'
@@ -565,7 +587,7 @@ local plugin_setups = {
 		end
 	},
 	{
-		'nvim-telescope/telescope.nvim', tag = '0.1.4',
+		'nvim-telescope/telescope.nvim', tag = '0.1.6',
 		requires = { {'nvim-lua/plenary.nvim'} },
 		config = function()
 			require('telescope').setup()
@@ -610,11 +632,28 @@ local plugin_setups = {
 			external = { python = "python %", go = "go run %", rust = "cargo run", sh = "sh %" }
 		}
 	}, lazy = true },
+	{'nvim-pack/nvim-spectre', keys = {
+		{'<leader>nS', '<cmd>lua require("spectre").toggle()<CR>', desc = "Toggle Spectre"},
+		{'<leader>nw', '<cmd>lua require("spectre").open_visual({select_word=true})<CR>', desc = "Search current word"},
+		{'<leader>nw', '<esc><cmd>lua require("spectre").open_visual({select_word=true})<CR>', desc = "Search current word", mode="v"},
+		{'<leader>np', '<cmd>lua require("spectre").open_file_search({select_word=true})<CR>', desc = "Search on current file"},
+	} },
+
+
+
+
+
+
+
+
+
+
 
 	-- {{{ TREESITTER PLUGINS
 	{
 		'nvim-treesitter/nvim-treesitter',
 		run = ':TSUpdate',
+		event = "BufEnter",
 		config = function()
 			require 'nvim-treesitter.configs'.setup {
 				ensure_installed = { "c", "lua", "vim", "vimdoc", "query", "python", "css", "html", "haskell", "c_sharp", "markdown", "markdown_inline" },
@@ -635,7 +674,7 @@ local plugin_setups = {
 					},
 				},
 				highlight = {
-					enable = true,
+					enable = false,
 				}
 			}
 
@@ -653,171 +692,10 @@ local plugin_setups = {
 			}
 
 			vim.api.nvim_set_hl(0, "@line_comment", { link = "comment" })
-			-- ;; Markup
 
--- (markup) @markup
--- (escape) @string.escape
--- (text_shorthand) @punctuation
--- (smart_quote) @punctuation.delimiter
--- (raw
-  -- (raw_open_inline)) @markup.raw.inline
--- (raw
-  -- (raw_open_block)) @markup.raw.block
--- (link) @markup.link.url
--- (label) @markup.label
--- (strong) @markup.bold
--- (emph) @markup.italic
-
--- (heading
-  -- (heading_start) @markup.heading.marker
--- ) @markup.heading
-
--- ;; Math
-
--- (equation
-  -- "$" @punctuation.special)
-
--- (math_shorthand) @operator
--- (math_delimited_left) @punctuation.bracket
--- (math_delimited_right) @punctuation.bracket
--- (math_align_point) @operator
-
--- (math_function_call
-  -- [
-    -- (math_field_access
-      -- target: (_) @function)
-    -- (math_field_access
-      -- field: (_) @function.method)
-  -- ])
--- (math_field_access
-  -- [
-    -- target: (_) @variable
-    -- field: (_) @variable.other.member  
-  -- ])
-
--- (math_root
-  -- ["√" "∛" "∜"] @operator)
--- (math_attach_below
-  -- "_" @operator)
--- (math_attach_above
-  -- "^" @operator)
--- (math_frac
-  -- "/" @operator)
-
--- ((math_text) @constant.numeric.integer
-  -- (#match? @constant.numeric.integer "^\\d+$"))
--- ((math_text) @constant.numeric.float
-  -- (#match? @constant.numeric.float "^\\d+\\.\\d+$"))
--- (math_ident) @identifier
-
--- ;; Code
-
--- "#" @punctuation.special
--- [
-  -- (embedded_code_expr_end)
-  -- (embedded_code_stmt_end)
--- ] @punctuation.delimiter
-
--- (content_block_open) @punctuation.bracket
--- (content_block_close) @punctuation.bracket
-
--- ".." @operator
-
--- (let_binding
-  -- [
-    -- "let" @keyword.storage
-    -- "=" @operator
-  -- ])
--- (pattern
-  -- [
-    -- "_" @variable
-    -- (code_ident) @variable
-  -- ])
--- (pattern_parenthesized
-  -- (code_ident) @variable)
--- (pattern_destructuring
-  -- (code_ident) @variable)
--- (pattern_closure
-  -- name: (_) @function)
--- (params
-  -- [
-    -- (code_ident) @variable.parameter
-    -- (pattern_spread
-      -- (code_ident) @variable.parameter)
-    -- (pattern_destructuring
-      -- [
-        -- (code_ident) @variable.parameter
-        -- (pattern_spread
-          -- (code_ident) @variable.parameter)
-        -- (pattern_named
-          -- binding: (code_ident) @variable.parameter)
-      -- ])
-  -- ])
--- (param_named
-  -- name: (_) @variable.parameter)
--- (pattern_named
-  -- [
-    -- field: (_) @variable.other.member
-    -- binding: (_) @variable 
-  -- ])
-
--- "set" @keyword.operator.assignment
--- (set_rule_field_access
-  -- [
-    -- target: (_) @variable
-    -- field: (_) @variable.other.member  
-  -- ])
-
--- "show" @keyword.control.show
-
--- "if" @keyword.control.conditional
--- "else" @keyword.control.conditional
--- "while" @keyword.control.repeat.while
--- "for" @keyword.control.repeat.for
--- (for_loop
-  -- "in" @keyword.control.repeat.in)
-
--- "import" @keyword.control.import
--- "include" @keyword.control.import
-
--- [
-  -- "break"
-  -- "continue"
-  -- "return"
--- ] @keyword.control.return
-
--- (variable) @variable
--- (code_ident) @identifier
--- (code_int) @constant.numeric.integer
--- (code_float) @constant.numeric.float
--- (string) @string
--- [
-  -- "none"
-  -- "auto"
-  -- "true"
-  -- "false"
--- ] @constant.builtin
-
--- ;; Any
-
--- [
-  -- "{"
-  -- "}"
-  -- "("
-  -- ")"
--- ] @punctuation.bracket
--- [
-  -- "."
-  -- ","
-  -- ";"
-  -- ":"
--- ] @punctuation.delimiter
-
--- (line_comment) @comment.line
--- (block_comment) @comment.block
 		end,
 	},
-	{ 'p00f/nvim-ts-rainbow', dependencies = {'nvim-treesitter/nvim-treesitter'} },
+	{ 'HiPhish/rainbow-delimiters.nvim', dependencies = {'nvim-treesitter/nvim-treesitter'} },
 	{ 'romgrk/nvim-treesitter-context', dependencies = {'nvim-treesitter/nvim-treesitter'} }, -- first line shows ctx
 	{ 'RRethy/nvim-treesitter-textsubjects', dependencies = {'nvim-treesitter/nvim-treesitter'} }, -- context aware selection
 	{ 'nvim-treesitter/playground',
@@ -850,7 +728,30 @@ local plugin_setups = {
 	{ 'honza/dockerfile.vim',       ft = {'Dockerfile'} },
 	{'neoclide/vim-jsx-improve',    ft = {'javascript', 'jsx', 'javascript.jsx'} },
 	{ 'kmonad/kmonad-vim',          ft = {'kbd'} }, -- kmonad config
-	-- { 'kaarmu/typst.vim', ft = 'typst'},
+	{'slint-ui/vim-slint', ft={'slint'}},
+	{ 'kaarmu/typst.vim', ft = 'typst'},
+	{
+		'chomosuke/typst-preview.nvim',
+		ft = 'typst',
+		version = '0.3.*',
+		build = function() require 'typst-preview'.update() end,
+	},
+	{
+		'TobinPalmer/pastify.nvim',
+		lazy = true,
+		cmd = {'Pastify'},
+		opts = {
+			ft = {
+				html = '<img src="$IMG$" alt="">',
+				markdown = '![]($IMG$)',
+				tex = [[\includegraphics[width=\linewidth]{$IMG$}]],
+				typst = '#image("$IMG$")'
+			}
+		},
+		keys = {
+			{"<leader>vi", ":Pastify<CR>", desc="Paste image"}
+		}
+	},
 	{
 		"nvim-neorg/neorg",
 		build = ":Neorg sync-parsers",
@@ -894,24 +795,14 @@ local plugin_setups = {
 		keymap("n", "<leader>pm", ":StartMdPreview<CR>", opts)
 	end },
 	{'conornewton/vim-pandoc-markdown-preview', ft =  {'markdown', 'markdown.pandoc'}, cmd = 'StartMdPreview'},
+	{'elkowar/yuck.vim'},
+	{'shiracamus/vim-syntax-x86-objdump-d'},
 	-- }}}
 
 	{ 'Bekaboo/deadcolumn.nvim', config = function()
 		set.colorcolumn = "72"
 		require('deadcolumn').setup({warning = { hlgroup = {'Error', 'foreground'} } })
 	end },
-
-	-- {
-	-- 	"jcdickinson/codeium.nvim",
-	-- 	dependencies = {
-	-- 		"nvim-lua/plenary.nvim",
-	-- 		"hrsh7th/nvim-cmp",
-	-- 	},
-	-- 	config = function()
-	-- 		require("codeium").setup({
-	-- 		})
-	-- 	end
-	-- }
 }
 
 -- {{{ Helper functions for organizing
