@@ -6,9 +6,9 @@ opts = {noremap = true, silent = true}
 
 
 
-g.table_mode_map_prefix = '<space>T'
-g.table_mode_tableize_d_map = '<space>TT'
-g.table_mode_insert_column_after_map = '<space>Tac'
+g.table_mode_map_prefix = '<leader>T'
+g.table_mode_tableize_d_map = '<leader>TT'
+g.table_mode_insert_column_after_map = '<leader>Tac'
 
 g["pandoc#filetypes#pandoc_markdown"] = 0
 if BINDINGS == "colemak" then
@@ -72,18 +72,17 @@ local plugin_setups = {
 				-- Mappings.
 				-- See `:help vim.lsp.*` for documentation on any of the below functions
 				local bufopts = { noremap=true, silent=true, buffer=bufnr }
-				keymap('n', '<space>jD', vim.lsp.buf.declaration, bufopts)
-				keymap('n', '<space>jd', vim.lsp.buf.definition, bufopts)
-				keymap('n', '<space>ji', vim.lsp.buf.implementation, bufopts)
+				keymap('n', '<leader>jD', vim.lsp.buf.declaration, bufopts)
+				keymap('n', '<leader>jd', vim.lsp.buf.definition, bufopts)
+				keymap('n', '<leader>ji', vim.lsp.buf.implementation, bufopts)
 				keymap('n', '<C-k>', vim.lsp.buf.signature_help, bufopts)
-				keymap('n', '<space>lwa', vim.lsp.buf.add_workspace_folder, bufopts)
-				keymap('n', '<space>lwr', vim.lsp.buf.remove_workspace_folder, bufopts)
-				keymap('n', '<space>lwl', function()
-					print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+				keymap('n', '<leader>lwa', vim.lsp.buf.add_workspace_folder, bufopts)
+				keymap('n', '<leader>lwr', vim.lsp.buf.remove_workspace_folder, bufopts)
+				keymap('n', '<leader>lwl', function()
+					print(vim.inspect(vim.lsp.buf.list_work_folders()))
 				end, bufopts)
-				keymap('n', '<space>D', vim.lsp.buf.type_definition, bufopts)
-				keymap('n', '<space>jr', vim.lsp.buf.references, bufopts)
-				keymap('n', '<space>lf', vim.lsp.buf.formatting, bufopts)
+				keymap('n', '<leader>D', vim.lsp.buf.type_definition, bufopts)
+				keymap('n', '<leader>jr', vim.lsp.buf.references, bufopts)
 
 				vim.api.nvim_create_autocmd("CursorHold", {
 				buffer = bufnr,
@@ -106,7 +105,7 @@ local plugin_setups = {
 
 			local lspconfig = require('lspconfig')
 			lspconfig.pylsp.setup{}
-			lspconfig.tsserver.setup{  on_attach = on_attach, flags = lsp_flags   }
+			lspconfig.ts_ls.setup{  on_attach = on_attach, flags = lsp_flags   }
 			lspconfig.elixirls.setup{  cmd = { "elixir-ls" }, on_attach = on_attach   }
 			lspconfig.clangd.setup{    flags = lsp_flags, on_attach = on_attach   }
 			lspconfig.slint_lsp.setup{    flags = lsp_flags, on_attach = on_attach   }
@@ -132,15 +131,18 @@ local plugin_setups = {
 			lspconfig.hls.setup{ flags = lsp_flags, on_attach = on_attach }
 			lspconfig.asm_lsp.setup{ flags = lsp_flags, on_attach = on_attach }
 			lspconfig.svelte.setup{}
-			lspconfig.typst_lsp.setup{
-				settings = {
-					exportPdf = "onType" -- Choose onType, onSave or never.
-					-- serverPath = "" -- Normally, there is no need to uncomment it.
-				}
-			}
+			-- lspconfig.typst_lsp.setup{
+			-- 	settings = {
+			-- 		-- exportPdf = "onSave" -- Choose onType, onSave or never.
+			-- 		-- serverPath = "" -- Normally, there is no need to uncomment it.
+			-- 	}
+			-- }
 			lspconfig.tinymist.setup{
 				root_dir = function()
 					return vim.fn.getcwd()
+				end,
+				on_init = function(client)
+				  client.offset_encoding = "utf-8"
 				end,
 			}
 			lspconfig.csharp_ls.setup{}
@@ -155,7 +157,7 @@ local plugin_setups = {
 							-- Get the language server to recognize the `vim` global
 							globals = {'vim'},
 						},
-						workspace = {
+						work = {
 							-- Make the server aware of Neovim runtime files
 							library = vim.api.nvim_get_runtime_file("", true),
 						},
@@ -207,7 +209,7 @@ local plugin_setups = {
 					program = function()
 						return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
 					end,
-					cwd = '${workspaceFolder}',
+					cwd = '${workFolder}',
 					stopOnEntry = true,
 					args = function ()
 						local t={}
@@ -228,7 +230,7 @@ local plugin_setups = {
 					program = function()
 						return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/target/debug/', 'file')
 					end,
-					cwd = '${workspaceFolder}',
+					cwd = '${workFolder}',
 					stopOnEntry = true,
 					args = {},
 					runInTerminal = false
@@ -252,12 +254,12 @@ local plugin_setups = {
 			}
 		end,
 		keys = {
-			{ "<space>db", function() require"dap".toggle_breakpoint() end, unpack(opts) },
-			{ "<space>dB", function() require"dap".set_breakpoint(vim.fn.input('Breakpoint condition: ')) end, unpack(opts) },
-			{ "<space>dc", function() require"dap".continue() end, unpack(opts) },
-			{ "<space>ds", function() require"dap".step_over() end, unpack(opts) },
-			{ "<space>di", function() require"dap".step_into() end, unpack(opts) },
-			{ "<space>dr", function() require"dap".repl.open() end, unpack(opts) },
+			{ "<leader>db", function() require"dap".toggle_breakpoint() end, unpack(opts) },
+			{ "<leader>dB", function() require"dap".set_breakpoint(vim.fn.input('Breakpoint condition: ')) end, unpack(opts) },
+			{ "<leader>dc", function() require"dap".continue() end, unpack(opts) },
+			{ "<leader>ds", function() require"dap".step_over() end, unpack(opts) },
+			{ "<leader>di", function() require"dap".step_into() end, unpack(opts) },
+			{ "<leader>dr", function() require"dap".repl.open() end, unpack(opts) },
 		},
 		lazy = true
 
@@ -278,12 +280,22 @@ local plugin_setups = {
 			dapui.close()
 		end
 
-		keymap("n", "<space>sx", function() dapui.open() end, opts)
+		keymap("n", "<leader>sx", function() dapui.open() end, opts)
 
 		keymap("n", BINDINGS == "colemak" and"<M-n>" or "<M-k>", "<Cmd>lua require(\"dapui\").eval()<CR>", opts)
 	end},
 
-	'nvimtools/none-ls.nvim', -- linter and formatter
+	{
+		'nvimtools/none-ls.nvim',
+		config = function()
+			local null_ls = require("null-ls")
+			null_ls.setup({
+				sources = {
+					null_ls.builtins.formatting.stylua,
+				},
+			})
+		end
+	}, -- linter and formatter
 	{
 		'glepnir/lspsaga.nvim',
 		event = 'BufRead',
@@ -312,17 +324,17 @@ local plugin_setups = {
 			{'gh', "<cmd>Lspsaga lsp_finder<CR>", unpack(opts) },
 			{"gd", "<cmd>Lspsaga peek_definition<CR>", unpack(opts)},
 			{BINDINGS == "colemak" and "N" or "K", "<cmd>Lspsaga hover_doc<CR>"},
-			{"<space>lr", "<cmd>Lspsaga rename<CR>", desc="Rename var", unpack(opts)},
-			{"<space>lp", "<cmd>Lspsaga diagnostic_jump_prev<CR>", desc="previous diagnostic", unpack(opts)},
-			{"<space>ln", "<cmd>Lspsaga diagnostic_jump_next<CR>", desc="next diagnostic", unpack(opts)},
-			{"<space>lb", "<cmd>Lspsaga show_buf_diagnostics<CR>", desc="buffer diagnostics", unpack(opts)},
-			{"<space>lo", "<cmd>Lspsaga outline<CR>", desc="Outline", unpack(opts)}
+			{"<leader>lr", "<cmd>Lspsaga rename<CR>", desc="Rename var", unpack(opts)},
+			{"<leader>lp", "<cmd>Lspsaga diagnostic_jump_prev<CR>", desc="previous diagnostic", unpack(opts)},
+			{"<leader>ln", "<cmd>Lspsaga diagnostic_jump_next<CR>", desc="next diagnostic", unpack(opts)},
+			{"<leader>lb", "<cmd>Lspsaga show_buf_diagnostics<CR>", desc="buffer diagnostics", unpack(opts)},
+			{"<leader>lo", "<cmd>Lspsaga outline<CR>", desc="Outline", unpack(opts)}
 		}
 	},
 	{ 'mfussenegger/nvim-jdtls', ft = {'java'}, config = function()
 		end
 	},
-	{ 'hrsh7th/cmp-nvim-lsp', lazy = true },
+	{ 'hrsh7th/cmp-nvim-lsp', lazy = true , event = "InsertEnter" },
 	{ 'hrsh7th/nvim-cmp', lazy = true, event = "InsertEnter" },
 	{ 'hrsh7th/cmp-buffer', lazy = true, event = "InsertEnter" },
 	{ 'hrsh7th/cmp-path', lazy = true, event = "InsertEnter" },
@@ -350,7 +362,7 @@ local plugin_setups = {
 					on_attach = function(_, bufnr)
 						local bufopts = { noremap=true, silent=true, buffer=bufnr }
 						-- Hover actions
-						vim.keymap.set("n", "<C-space>", rt.hover_actions.hover_actions, bufopts)
+						vim.keymap.set("n", "<C->", rt.hover_actions.hover_actions, bufopts)
 						-- Code action groups
 						vim.keymap.set("n", "<Leader>a", rt.code_action_group.code_action_group, bufopts)
 					end,
@@ -385,7 +397,7 @@ local plugin_setups = {
 				},
 				sources = cmp.config.sources({
 						{ name = 'nvim_lsp_signature_help' },
-						{ name = "codeium" },
+						-- { name = "codeium" },
 						{ name = 'path' },
 						{ name = 'nvim_lsp', keyword_length = 2 },
 						{ name = 'ultisnips' },
@@ -432,7 +444,7 @@ local plugin_setups = {
 
 	-- {{{ utilities while writing
 	{ 'junegunn/limelight.vim'
-		, keys = {{"<space>tf", "<cmd>Limelight!!<CR>", desc="focus mode"}, unpack(opts) }, lazy = true, cmd = { "Limelight" }
+		, keys = {{"<leader>tf", "<cmd>Limelight!!<CR>", desc="focus mode"}, unpack(opts) }, lazy = true, cmd = { "Limelight" }
 		, config = function ()
 			-- Color name (:help cterm-colors) or ANSI code
 			g.limelight_conceal_ctermfg = 'gray'
@@ -447,10 +459,10 @@ local plugin_setups = {
 		g.VM_mouse_mappings = 1
 	end, keys = {{"<C-down>", "<Plug>newCursor<CR>", unpack(opts)}}},
 	{"ziontee113/color-picker.nvim",
-		setup = true, lazy = true, keys = {{"<space>s", ":PickColor<cr>", desc = "Color Picker"}}
+		setup = true, lazy = true, keys = {{"<leader>s", ":PickColor<cr>", desc = "Color Picker"}}
 	},
 	{'rhysd/vim-grammarous', lazy = true,
-		keys = {{"<space>tg", "<cmd>GrammarousCheck<CR>", desc = "Grammar checker", unpack(opts)}}, cmd = {'GrammarousCheck'} },
+		keys = {{"<leader>tg", "<cmd>GrammarousCheck<CR>", desc = "Grammar checker", unpack(opts)}}, cmd = {'GrammarousCheck'} },
 	{ 'folke/todo-comments.nvim', setup = true },
 	{ 'norcalli/nvim-colorizer.lua', setup = true },
 	'honza/vim-snippets',
@@ -468,13 +480,12 @@ local plugin_setups = {
 	}, -- start menu
 	{ 'nvim-tree/nvim-tree.lua'
 		, dependencies = { 'nvim-tree/nvim-web-devicons' }
-		, tag = 'nightly'
 		, config = function ()
 			require("nvim-tree").setup()
 		end,
 		lazy = true,
 		cmd = {"NvimTreeOpen", "NvimTreeToggle"},
-		keys = {{"<space>sf", "<cmd>NvimTreeToggle<CR>", desc="file tree", unpack(opts)}}
+		keys = {{"<leader>sf", "<cmd>NvimTreeToggle<CR>", desc="file tree", unpack(opts)}}
 
 	}, -- file tree
 	{'akinsho/bufferline.nvim', tag = "v3.*", dependencies = { 'nvim-tree/nvim-web-devicons' }
@@ -494,7 +505,7 @@ local plugin_setups = {
 
 	{ 'folke/which-key.nvim'
 		, lazy=true
-		, keys="<space>"
+		, keys="<leader>"
 		, config = function ()
 			local wk = require("which-key")
 			wk.setup({ triggers = { "<leader>" }, triggers_blacklist = { i = {"<leader>"} } })
@@ -550,7 +561,7 @@ local plugin_setups = {
 					e = "emojify",
 					t = {
 						name = "tabs",
-						s = "to space"
+						s = "to "
 					},
 					w = "word wrap"
 				},
@@ -656,7 +667,7 @@ local plugin_setups = {
 		event = "BufEnter",
 		config = function()
 			require 'nvim-treesitter.configs'.setup {
-				ensure_installed = { "c", "lua", "vim", "vimdoc", "query", "python", "css", "html", "haskell", "c_sharp", "markdown", "markdown_inline" },
+				ensure_installed = { "c", "lua", "vim", "vimdoc", "query", "python", "css", "html", "haskell", "c_sharp", "markdown", "markdown_inline", "vala", "blueprint" },
 				rainbow = {
 					enable = true,
 					disable = {'bash'} -- please disable bash until I figure #1 out
@@ -674,22 +685,10 @@ local plugin_setups = {
 					},
 				},
 				highlight = {
-					enable = false,
+					enable = true,
 				}
 			}
 
-			local parserconfig = require 'nvim-treesitter.parsers'.get_parser_configs()
-
-			parserconfig.typst = {
-				install_info = {
-					url = "https://github.com/frozolotl/tree-sitter-typst",
-					files = { "src/parser.c", "src/scanner.cc" },
-					branch = "master",
-					generate_requires_npm = true,
-					requires_generate_from_grammar = false
-				},
-				filetype = "typst"
-			}
 
 			vim.api.nvim_set_hl(0, "@line_comment", { link = "comment" })
 
@@ -733,7 +732,7 @@ local plugin_setups = {
 	{
 		'chomosuke/typst-preview.nvim',
 		ft = 'typst',
-		version = '0.3.*',
+		version = '1.*',
 		build = function() require 'typst-preview'.update() end,
 	},
 	{
@@ -745,7 +744,7 @@ local plugin_setups = {
 				html = '<img src="$IMG$" alt="">',
 				markdown = '![]($IMG$)',
 				tex = [[\includegraphics[width=\linewidth]{$IMG$}]],
-				typst = '#image("$IMG$")'
+				typst = '#figure(image("$IMG$"))'
 			}
 		},
 		keys = {
@@ -759,9 +758,9 @@ local plugin_setups = {
 			load = {
 				["core.defaults"] = {}, -- Loads default behaviour
 				["core.norg.concealer"] = {}, -- Adds pretty icons to your documents
-				["core.norg.dirman"] = { -- Manages Neorg workspaces
+				["core.norg.dirman"] = { -- Manages Neorg works
 					config = {
-						workspaces = {
+						works = {
 							notes = "~/notes",
 						},
 					},
@@ -783,7 +782,6 @@ local plugin_setups = {
 
 			g.table_mode_corner_corner='+'
 			g.table_mode_header_fillchar='='
-
 		end,
 		lazy = true
 	},
@@ -795,7 +793,7 @@ local plugin_setups = {
 		keymap("n", "<leader>pm", ":StartMdPreview<CR>", opts)
 	end },
 	{'conornewton/vim-pandoc-markdown-preview', ft =  {'markdown', 'markdown.pandoc'}, cmd = 'StartMdPreview'},
-	{'elkowar/yuck.vim'},
+	{'elkowar/yuck.vim', ft = {"yuck"}},
 	{'shiracamus/vim-syntax-x86-objdump-d'},
 	-- }}}
 
@@ -834,20 +832,20 @@ plugin_setups:concat {
 	, config = function () 
 		require("pets").setup{}
 	end
-	, keys = {{'<space>fp', '<cmd>PetsNew yeeeee<cr>', desc = 'new pet :D'},
+	, keys = {{'<leader>fp', '<cmd>PetsNew yeeeee<cr>', desc = 'new pet :D'},
 	}
 	, lazy = true
 	, cmd = {'PetsNew', 'PetsNewCustom'}
-	}
-, -- }}}
+	},
+	-- }}}
 	-- {{{ LaTeX To unicode 
 	{'joom/latex-unicoder.vim'
 	, keys = {
-		{'<space>fu', ":call unicoder#start(0)<CR>", desc = "convert LaTeX to unicode"}
+		{'<leader>fu', ":call unicoder#start(0)<CR>", desc = "convert LaTeX to unicode"}
 	} },
 	-- }}}
 	-- {{{ some UI 
-	{'skywind3000/vim-quickui', keys={{'<space><space>', ':call quickui#menu#open()<CR>'}, desc="Quickui"}, lazy = true},
+	{'skywind3000/vim-quickui', keys={{'<leader><leader>', ':call quickui#menu#open()<CR>'}, desc="Quickui"}, lazy = true},
 	-- }}}
 }
 

@@ -12,7 +12,6 @@ set.hidden = true
 set.wrap=false
 
 set.colorcolumn = "72"
-set.textwidth = 72
 
 g.mapleader = ' '
 g.maplocalleader = ','
@@ -77,12 +76,12 @@ g.CURRENT_CONFIG_FOLDER = string.gsub(os.getenv("MYVIMRC") or "~/.config/nvim/",
 
 g.gruvbox_contrast_dark = "hard"
 
-autocmd(
-  {"BufRead", "BufNewFile"},
-  {
-      pattern = '*.typ',
-      callback = function()
-          vim.opt_local.ft = "typst"
-      end,
-      group = numbertogglegroup
-  })
+-- autocmd(
+--   {"BufRead", "BufNewFile"},
+--   {
+--       pattern = '*.typ',
+--       callback = function()
+--           vim.opt_local.ft = "typst"
+--       end,
+--       group = numbertogglegroup
+--   })

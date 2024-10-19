@@ -1,0 +1,82 @@
+global !p
+def isMath():
+    # DEBUGGING
+    synstack = vim.eval("map(synstack(line('.'), col('.') - (col('.')>=2 ? 1 : 0)), {i,v -> synIDattr(v, 'name')})")
+    # MODIFICATION reverse() is not necessary since pandocLaTeXInlineMath is the outer group anyway.
+
+    print("synstack: " + str(synstack))
+    return "typstMarkupDollar" in synstack
+endglobal
+
+
+
+
+
+
+
+context "isMath()"
+snippet '([A-Za-z])(\d)' "auto subscript" wrA
+`!p snip.rv = match.group(1)`_`!p snip.rv = match.group(2)`
+endsnippet
+
+
+
+priority 100
+context "isMath()"
+snippet "([a-zA-Z]|[a-zA-Z][0-9_]\d)bar" "bar" riA
+overline(`!p snip.rv=match.group(1)`)
+endsnippet
+
+priority 100
+context "isMath()"
+snippet "([a-zA-Z]|[a-zA-Z][0-9_]\d)til" "til" riA
+tilde(`!p snip.rv=match.group(1)`)
+endsnippet
+
+
+priority 100
+context "isMath()"
+snippet over "over" w
+limits($1)^($2)$0
+endsnippet
+
+
+
+context "isMath()"
+snippet ^^ "^()" iA
+^($1)$0
+endsnippet
+
+context "isMath()"
+snippet __ "_()" iA
+_($1)$0
+endsnippet
+
+context "isMath()"
+priority 1000
+snippet '^.*\)xb' "() underbrace" wrA
+`!p
+stripped = match.string[:-1]
+depth = 0
+i = len(stripped) - 2
+while True:
+    if stripped[i] == ')': depth += 1
+    if stripped[i] == '(': depth -= 1
+    if depth == 0: break
+    i -= 1
+snip.rv = stripped[0:i] + "underbrace(" + stripped[i+1:-2]
+`, $1)$0
+endsnippet
+
+
+
+
+context "isMath()"
+snippet sum "sum" wA
+sum_(${2:i=0})^(${1:n})$0
+endsnippet
+
+
+snippet $$ "$ $" iA
+$$1 $$0
+endsnippet
