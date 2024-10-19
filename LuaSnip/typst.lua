@@ -1,0 +1,106 @@
+local function is_math_mode() 
+  local buf = vim.api.nvim_get_current_buf()
+  local highlighter = require "vim.treesitter.highlighter"
+  local is_math_mode = false
+  if highlighter.active[buf] then
+   -- treesitter highlighting is enabled
+    print("hi")
+    local obj = vim.inspect_pos()["treesitter"]
+    for i = #obj, 1, -1 do
+      if obj[i]["capture"] == "string" or obj[i]["capture"] == "spell" then
+        break
+      end
+
+      if obj[i]["capture"] == "markup.math" then
+        is_math_mode = true
+        break
+      end
+    end
+  else 
+   -- treesitter highlighting is disabled
+   -- using synstack instead
+    local synstack = vim.iter(vim.fn.synstack(vim.fn.line('.'), vim.fn.col('.') - (vim.fn.col('.')>=2 and 1 or 0))):map(function(v) return vim.fn.synIDattr(v, 'name') end):totable()
+    is_math_mode = table.contains(synstack, "typstMarkupDollar")
+  end
+  print(is_math_mode)
+  return is_math_mode
+end
+
+local ls = require("luasnip");
+
+return {
+  ls.snippet(
+    { trig = "$$", snippetType="autosnippet", wordTrig=false },
+    fmta("$<> $<>", {i(1), i(0)})
+  ),
+
+  ls.snippet(
+    { trig = "sum", snippetType="autosnippet", wordTrig=true },
+    fmta("sum_(<>)^(<>)<>", {i(2, "i=0"), i(1,"n"), i(0)}),
+    { condition = is_math_mode, show_condition = is_math_mode }
+  ),
+
+  ls.snippet(
+    { trig = "over" },
+    fmta("limits(<>)^(<>)<>", {i(1), i(2), i(0)}),
+    { condition = is_math_mode, show_condition = is_math_mode }
+  ),
+
+  ls.snippet(
+    { trig = "([%a%)%]%}])(%d)", snippetType="autosnippet", wordTrig=false, regTrig=true },
+    fmta("<>_<>", {
+      f( function(_, snip) return snip.captures[1] end ),
+      f( function(_, snip) return snip.captures[2] end ),
+    }),
+    { condition = is_math_mode, show_condition = is_math_mode }
+  ),
+
+  ls.snippet(
+    { trig = "([%a%)%]%}])_(%d%d)", snippetType="autosnippet", wordTrig=false, regTrig=true },
+    fmta("<>_(<>)", {
+      f( function(_, snip) return snip.captures[1] end ),
+      f( function(_, snip) return snip.captures[2] end ),
+    }),
+    { condition = is_math_mode, show_condition = is_math_mode }
+  ),
+
+  ls.snippet(
+    { trig = "__", snippetType="autosnippet" },
+    fmta("_(<>)<>", {i(1), i(0)}),
+    { condition = is_math_mode, show_condition = is_math_mode }
+  ),
+
+  ls.snippet(
+    { trig = "^^", snippetType="autosnippet" },
+    fmta("^(<>)<>", {i(1), i(0)}),
+    { condition = is_math_mode, show_condition = is_math_mode }
+  ),
+
+  ls.snippet(
+    { trig = "([%a][%d_]?%d?)bar", snippetType="autosnippet", wordTrig=false, regTrig=true },
+    fmta("overline(<>)", {f( function(_, snip) return snip.captures[1] end )}),
+    { condition = is_math_mode, show_condition = is_math_mode }
+  ),
+
+  ls.snippet(
+    { trig = "([%a][%d_]?%d?)til", snippetType="autosnippet", wordTrig=false, regTrig=true },
+    fmta("tilde(<>)", {f( function(_, snip) return snip.captures[1] end )}),
+    { condition = is_math_mode, show_condition = is_math_mode }
+  ),
+
+  ls.snippet(
+    { trig = "(%b())xb", dscr="underbrace", snippetType="autosnippet", wordTrig=false, regTrig=true },
+    fmta("underbrace(<>, <>)", {f( function(_, snip) return string.sub(snip.captures[1], 2, -2) end ), i(1)}),
+    { condition = is_math_mode, show_condition = is_math_mode }
+  ),
+
+  ls.snippet(
+    { trig = "(%b())sympy", dscr="sympy", snippetType="autosnippet", wordTrig=false, regTrig=true },
+    fmta("<>", {f( function(_, snip)
+        local output = vim.fn.system{'python', '-c', [[print(__import__('sympy').sympify(']] .. string.sub(snip.captures[1], 2, -2) .. [['))]] }
+        output = string.sub(output, 1, -2)
+        return output
+      end
+    ) })
+  ),
+}

@@ -163,7 +163,7 @@ local plugin_setups = {
 						},
 						-- Do not send telemetry data containing a randomized but unique identifier
 						telemetry = {
-							enable = false,
+							enable = true,
 						},
 					},
 				},
@@ -186,6 +186,11 @@ local plugin_setups = {
 					severity_sort = true,
 				}
 			) -- removes virtual text 
+			local signs = { Error = "󰅚 ", Warn = "󰀪 ", Hint = "󰌶 ", Info = " " }
+			for type, icon in pairs(signs) do
+				local hl = "DiagnosticSign" .. type
+				vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
+			end
 		end
 	, dependencies = { 'williamboman/mason-lspconfig.nvim' }},-- lsp config
 	{'williamboman/mason.nvim', config = function()
@@ -307,15 +312,15 @@ local plugin_setups = {
 					expand_collapse = "<Tab>"
 				}
 			},
-			ui = { title = false,
+			ui = {
+				title = false,
 				colors = {
 					title_bg = '#504945',
 					normal_bg = '#504945',
 				}
 			},
 			symbol_in_winbar = {
-				enable = false,
-				color_mode = false,
+				enable = false
 			}
 		},
 		dependencies = { {'nvim-tree/nvim-web-devicons'} },
@@ -331,53 +336,20 @@ local plugin_setups = {
 			{"<leader>lo", "<cmd>Lspsaga outline<CR>", desc="Outline", unpack(opts)}
 		}
 	},
-	{ 'mfussenegger/nvim-jdtls', ft = {'java'}, config = function()
-		end
-	},
+	{ 'mfussenegger/nvim-jdtls', ft = {'java'} },
 	{ 'hrsh7th/cmp-nvim-lsp', lazy = true , event = "InsertEnter" },
-	{ 'hrsh7th/nvim-cmp', lazy = true, event = "InsertEnter" },
-	{ 'hrsh7th/cmp-buffer', lazy = true, event = "InsertEnter" },
-	{ 'hrsh7th/cmp-path', lazy = true, event = "InsertEnter" },
-	{ 'hrsh7th/cmp-cmdline', lazy = true, event = "InsertEnter" },
-	{ 'f3fora/cmp-spell', lazy = true, event = "InsertEnter" },
-	{ 'sirver/ultisnips',
-			requires = { {'nvim-lua/plenary.nvim'} }, --because of plenary path
-			keys = {"<leader>cs", ":UltiSnipsEdit<CR>", desc="snippets", unpack(opts)},
-			lazy = false,
-			config = function()
-			g.UltiSnipsExpandTrigger = '<tab>'
-			g.UltiSnipsJumpForwardTrigger = '<tab>'
-			g.UltiSnipsJumpBackwardTrigger = '<s-tab>'
-			g.UltiSnipsSnippetDirectories={ g.CURRENT_CONFIG_FOLDER .. 'ultisnippets' }
-		end
-	},
-	{ 'quangnguyen30192/cmp-nvim-ultisnips', lazy = true, event = "InsertEnter" },
-	{ 'hrsh7th/cmp-nvim-lsp-signature-help', lazy = true, event = "InsertEnter" },
-	{ 'simrat39/rust-tools.nvim', lazy = true, ft = {"rust"},
-			after = "nvim-lspconfig", config =  function()
-			local rt = require("rust-tools")
-
-			rt.setup({
-				server = {
-					on_attach = function(_, bufnr)
-						local bufopts = { noremap=true, silent=true, buffer=bufnr }
-						-- Hover actions
-						vim.keymap.set("n", "<C->", rt.hover_actions.hover_actions, bufopts)
-						-- Code action groups
-						vim.keymap.set("n", "<Leader>a", rt.code_action_group.code_action_group, bufopts)
-					end,
-				},
-			})
-		end
-	},
-	{'tzachar/cmp-tabnine', build='./install.sh', dependencies = { 'hrsh7th/nvim-cmp', 'onsails/lspkind.nvim' }
-		, config = function()
+	{ 'hrsh7th/nvim-cmp', lazy = true, event = "InsertEnter",
+		dependencies = {
+			'hrsh7th/cmp-buffer', 'hrsh7th/cmp-path', 'hrsh7th/cmp-cmdline', 'f3fora/cmp-spell', 'quangnguyen30192/cmp-nvim-ultisnips', 'hrsh7th/cmp-nvim-lsp-signature-help', 'onsails/lspkind.nvim', 'saadparwaiz1/cmp_luasnip'
+		},
+		config = function()
 
 			local lspkind = require('lspkind');
 			lspkind.init()
 			local cmp = require'cmp'
 			local select_opts = {behavior = cmp.SelectBehavior.Select}
 			local cmp_autopairs = require('nvim-autopairs.completion.cmp')
+			local luasnip = require("luasnip");
 
 			vim.opt.spell = true
 			vim.opt.spelllang = { 'en_us', 'de_de' }
@@ -386,13 +358,44 @@ local plugin_setups = {
 				},
 				snippet = {
 					expand = function(args)
-						 vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
+						 -- vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
 					end,
 				},
 				mapping = {
-					['<S-Tab>'] = cmp.mapping.select_prev_item(select_opts),
-					['<Tab>'] = cmp.mapping.select_next_item(select_opts),
-					['<CR>'] = cmp.mapping.confirm({ select = false }),
+					-- ... Your other mappings ...
+					['<CR>'] = cmp.mapping(function(fallback)
+						if cmp.visible() then
+							if luasnip.expandable() then
+								luasnip.expand()
+							else
+								cmp.confirm({
+									select = true,
+								})
+							end
+						else
+							fallback()
+						end
+					end),
+
+					["<Tab>"] = cmp.mapping(function(fallback)
+					  if cmp.visible() then
+						cmp.select_next_item()
+					  elseif luasnip.locally_jumpable(1) then
+						luasnip.jump(1)
+					  else
+						fallback()
+					  end
+					end, { "i", "s" }),
+
+					["<S-Tab>"] = cmp.mapping(function(fallback)
+					  if cmp.visible() then
+						cmp.select_prev_item()
+					  elseif luasnip.locally_jumpable(-1) then
+						luasnip.jump(-1)
+					  else
+						fallback()
+					  end
+					end, { "i", "s" }),
 					-- ['<esc>'] = cmp.mapping.abort()
 				},
 				sources = cmp.config.sources({
@@ -402,6 +405,7 @@ local plugin_setups = {
 						{ name = 'nvim_lsp', keyword_length = 2 },
 						{ name = 'ultisnips' },
 						{ name = 'cmp_tabnine' },
+						{ name = 'luasnip' },
 				}, {{ name = 'buffer', keyword_length = 3 }, { name = 'spell' }}),
 				formatting = {
 					format = lspkind.cmp_format({
@@ -422,7 +426,59 @@ local plugin_setups = {
 				cmp_autopairs.on_confirm_done()
 			)
 		end
-	, lazy = true, event = "InsertEnter"},
+	},
+	-- { 'sirver/ultisnips',
+	-- 	requires = { {'nvim-lua/plenary.nvim'} }, --because of plenary path
+	-- 	dependencies = {'honza/vim-snippets'},
+	-- 	keys = {"<leader>cs", ":UltiSnipsEdit<CR>", desc="snippets", unpack(opts)},
+	-- 	lazy = false,
+	-- 	config = function()
+	-- 		g.UltiSnipsExpandTrigger = '<tab>'
+	-- 		g.UltiSnipsJumpForwardTrigger = '<tab>'
+	-- 		g.UltiSnipsJumpBackwardTrigger = '<s-tab>'
+	-- 		g.UltiSnipsSnippetDirectories={ g.CURRENT_CONFIG_FOLDER .. 'ultisnippets' }
+	-- 	end
+	-- },
+	{
+		"L3MON4D3/LuaSnip",
+		-- follow latest release.
+		version = "v2.*", -- Replace <CurrentMajor> by the latest released major (first number of latest release)
+		-- install jsregexp (optional!).
+		dependencies = { "rafamadriz/friendly-snippets" },
+		build = "make install_jsregexp",
+		config = function()
+			local ls = require("luasnip")
+			require("luasnip.loaders.from_vscode").lazy_load()
+			require("luasnip.loaders.from_lua").load({paths = "~/.config/nvim/LuaSnip/"})
+
+			ls.config.set_config({ -- Setting LuaSnip config
+
+				-- Enable autotriggered snippets
+				enable_autosnippets = true,
+
+				-- Use Tab (or some other key if you prefer) to trigger visual selection
+				store_selection_keys = "<Tab>",
+			})
+		end
+	},
+	{ 'simrat39/rust-tools.nvim', lazy = true, ft = {"rust"},
+			after = "nvim-lspconfig", config =  function()
+			local rt = require("rust-tools")
+
+			rt.setup({
+				server = {
+					on_attach = function(_, bufnr)
+						local bufopts = { noremap=true, silent=true, buffer=bufnr }
+						-- Hover actions
+						vim.keymap.set("n", "<C->", rt.hover_actions.hover_actions, bufopts)
+						-- Code action groups
+						vim.keymap.set("n", "<Leader>a", rt.code_action_group.code_action_group, bufopts)
+					end,
+				},
+			})
+		end
+	},
+	{'tzachar/cmp-tabnine', build='./install.sh', lazy = true, event = "InsertEnter"},
 	{
 		"Exafunction/codeium.nvim",
 		dependencies = {
@@ -465,7 +521,6 @@ local plugin_setups = {
 		keys = {{"<leader>tg", "<cmd>GrammarousCheck<CR>", desc = "Grammar checker", unpack(opts)}}, cmd = {'GrammarousCheck'} },
 	{ 'folke/todo-comments.nvim', setup = true },
 	{ 'norcalli/nvim-colorizer.lua', setup = true },
-	'honza/vim-snippets',
 	'tpope/vim-commentary',
 	{ 'chrisbra/NrrwRgn', cmd = {'NR', 'NW', 'NRP', 'NRM'} },
 	'lambdalisue/suda.vim',
@@ -488,7 +543,7 @@ local plugin_setups = {
 		keys = {{"<leader>sf", "<cmd>NvimTreeToggle<CR>", desc="file tree", unpack(opts)}}
 
 	}, -- file tree
-	{'akinsho/bufferline.nvim', tag = "v3.*", dependencies = { 'nvim-tree/nvim-web-devicons' }
+	{'akinsho/bufferline.nvim', version = "*", dependencies = { 'nvim-tree/nvim-web-devicons' }
 		, config = function ()
 			vim.opt.termguicolors = true
 			require("bufferline").setup{
@@ -510,91 +565,74 @@ local plugin_setups = {
 			local wk = require("which-key")
 			wk.setup({ triggers = { "<leader>" }, triggers_blacklist = { i = {"<leader>"} } })
 
-			wk.register({
-				c = {
-					name = "+config",
-					m = 'main config',
-				},
-				f = {
-					name = "+funky",
-					c = "color chooser"
-				},
-				j = {
-					name = "+jump",
-					d = "definition",
-					D = "declaration",
-					i = "implementation",
-					r = "references"
-				},
-				l = {
-					name = "+lsp",
-					f = "formatting",
-				},
-				n = {
-					name = "+navigation",
-					f = "files",
-					b = "buffers",
-					t = "tabs",
-					s = "string",
-					h = "help tags"
-				},
-				s = {
-					name = "+show",
-					f = "file tree",
-					c = "copy window",
-					v = "paste/swap window",
-					e = "ez swap window",
-					s = "shell",
-					x = "debugger ui",
-					p = "tree sitter",
-					d = "drawing"
-				},
-				t = {
-					name = "+text",
-					c = "duplicate line",
-					g = "grammar check",
-					r = "motion translate",
-					d = {
-						name = "+delete",
-						e = "empty lines"
-					},
-					e = "emojify",
-					t = {
-						name = "tabs",
-						s = "to "
-					},
-					w = "word wrap"
-				},
-				T = {
-					name = "+table",
-					m = "toggle",
-					r = "realign",
-					t = "tableize csv",
-					T = "tableize delim",
-					f = { name = '+formulas', a = 'add formula', e = 'eval form'},
-					d = { name = '+delete', d = 'delete row', c = 'delete column'},
-					a = { name = '+append', c = 'append column'},
-					i = { name = '+insert', c = 'insert column'},
-				},
-				w = {
-					name = "+window",
-					w = "default index",
-					t = "default in new tab",
-					s = "select index",
-					r = "rename current",
-					["-"] = "split",
-					["|"] = "vertsplit"
-				},
-				d = {
-					name = "+debugger",
-					s = "step over",
-					i = "step into",
-					c = "continue",
-					b = "breakpoint"
-				},
-				["+"] = "increase",
-				["-"] = "decrease"
-			}, { prefix = "<leader>" })
+			wk.add(
+			{
+				{ "<leader>+", desc = "increase" },
+				{ "<leader>-", desc = "decrease" },
+				{ "<leader>T", group = "table" },
+				{ "<leader>TT", desc = "tableize delim" },
+				{ "<leader>Ta", group = "append" },
+				{ "<leader>Tac", desc = "append column" },
+				{ "<leader>Td", group = "delete" },
+				{ "<leader>Tdc", desc = "delete column" },
+				{ "<leader>Tdd", desc = "delete row" },
+				{ "<leader>Tf", group = "formulas" },
+				{ "<leader>Tfa", desc = "add formula" },
+				{ "<leader>Tfe", desc = "eval form" },
+				{ "<leader>Ti", group = "insert" },
+				{ "<leader>Tic", desc = "insert column" },
+				{ "<leader>Tm", desc = "toggle" },
+				{ "<leader>Tr", desc = "realign" },
+				{ "<leader>Tt", desc = "tableize csv" },
+				{ "<leader>c", group = "config" },
+				{ "<leader>cm", desc = "main config" },
+				{ "<leader>d", group = "debugger" },
+				{ "<leader>db", desc = "breakpoint" },
+				{ "<leader>dc", desc = "continue" },
+				{ "<leader>di", desc = "step into" },
+				{ "<leader>ds", desc = "step over" },
+				{ "<leader>f", group = "funky" },
+				{ "<leader>fc", desc = "color chooser" },
+				{ "<leader>j", group = "jump" },
+				{ "<leader>jD", desc = "declaration" },
+				{ "<leader>jd", desc = "definition" },
+				{ "<leader>ji", desc = "implementation" },
+				{ "<leader>jr", desc = "references" },
+				{ "<leader>l", group = "lsp" },
+				{ "<leader>lf", desc = "formatting" },
+				{ "<leader>n", group = "navigation" },
+				{ "<leader>nb", desc = "buffers" },
+				{ "<leader>nf", desc = "files" },
+				{ "<leader>nh", desc = "help tags" },
+				{ "<leader>ns", desc = "string" },
+				{ "<leader>nt", desc = "tabs" },
+				{ "<leader>s", group = "show" },
+				{ "<leader>sc", desc = "copy window" },
+				{ "<leader>sd", desc = "drawing" },
+				{ "<leader>se", desc = "ez swap window" },
+				{ "<leader>sf", desc = "file tree" },
+				{ "<leader>sp", desc = "tree sitter" },
+				{ "<leader>ss", desc = "shell" },
+				{ "<leader>sv", desc = "paste/swap window" },
+				{ "<leader>sx", desc = "debugger ui" },
+				{ "<leader>t", group = "text" },
+				{ "<leader>tc", desc = "duplicate line" },
+				{ "<leader>td", group = "delete" },
+				{ "<leader>tde", desc = "empty lines" },
+				{ "<leader>te", desc = "emojify" },
+				{ "<leader>tg", desc = "grammar check" },
+				{ "<leader>tr", desc = "motion translate" },
+				{ "<leader>tt", group = "tabs" },
+				{ "<leader>tts", desc = "to " },
+				{ "<leader>tw", desc = "word wrap" },
+				{ "<leader>w", group = "window" },
+				{ "<leader>w-", desc = "split" },
+				{ "<leader>wr", desc = "rename current" },
+				{ "<leader>ws", desc = "select index" },
+				{ "<leader>wt", desc = "default in new tab" },
+				{ "<leader>ww", desc = "default index" },
+				{ "<leader>w|", desc = "vertsplit" },
+			})
 		end
 	},
 	{
@@ -805,11 +843,11 @@ local plugin_setups = {
 
 -- {{{ Helper functions for organizing
 plugin_setups.__index = plugin_setups
-plugin_setups.insert = function(a) 
+plugin_setups.insert = function(a)
 	table.insert(a, b)
 end
 
-function plugin_setups:load() 
+function plugin_setups:load()
 	require('lazy').setup(self)
 end
 
@@ -829,7 +867,7 @@ plugin_setups:concat {
 	-- {{{ pets 
 	{ 'giusgad/pets.nvim'
 	, dependencies = { "MunifTanjim/nui.nvim", "giusgad/hologram.nvim" }
-	, config = function () 
+	, config = function ()
 		require("pets").setup{}
 	end
 	, keys = {{'<leader>fp', '<cmd>PetsNew yeeeee<cr>', desc = 'new pet :D'},

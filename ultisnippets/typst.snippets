@@ -8,18 +8,10 @@ def isMath():
     return "typstMarkupDollar" in synstack
 endglobal
 
-
-
-
-
-
-
 context "isMath()"
 snippet '([A-Za-z])(\d)' "auto subscript" wrA
 `!p snip.rv = match.group(1)`_`!p snip.rv = match.group(2)`
 endsnippet
-
-
 
 priority 100
 context "isMath()"
