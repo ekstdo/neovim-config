@@ -4,7 +4,6 @@ local function is_math_mode()
   local is_math_mode = false
   if highlighter.active[buf] then
    -- treesitter highlighting is enabled
-    print("hi")
     local obj = vim.inspect_pos()["treesitter"]
     for i = #obj, 1, -1 do
       if obj[i]["capture"] == "string" or obj[i]["capture"] == "spell" then
@@ -22,8 +21,18 @@ local function is_math_mode()
     local synstack = vim.iter(vim.fn.synstack(vim.fn.line('.'), vim.fn.col('.') - (vim.fn.col('.')>=2 and 1 or 0))):map(function(v) return vim.fn.synIDattr(v, 'name') end):totable()
     is_math_mode = table.contains(synstack, "typstMarkupDollar")
   end
-  print(is_math_mode)
   return is_math_mode
+end
+
+function concatlines(a, b)
+  local new_table = {unpack(a)}
+  new_table[#new_table] = new_table[#new_table] .. b[1]
+  if #b > 1 then
+    for i = 2, #b do
+      new_table[#a + i - 1] = b[i]
+    end
+  end
+  return new_table
 end
 
 local ls = require("luasnip");
@@ -35,8 +44,25 @@ return {
   ),
 
   ls.snippet(
+    { trig = "code", dscr = "codeblock", wordTrig=false },
+    fmta("```<>\n<>\n```\n<>", {i(1), i(2), i(0)})
+  ),
+
+  ls.snippet(
     { trig = "sum", snippetType="autosnippet", wordTrig=true },
     fmta("sum_(<>)^(<>)<>", {i(2, "i=0"), i(1,"n"), i(0)}),
+    { condition = is_math_mode, show_condition = is_math_mode }
+  ),
+
+  ls.snippet(
+    { trig = "prod", wordTrig=true },
+    fmta("prod_(<>)^(<>)<>", {i(2, "i=0"), i(1,"n"), i(0)}),
+    { condition = is_math_mode, show_condition = is_math_mode }
+  ),
+
+  ls.snippet(
+    { trig = "tensorprod", wordTrig=true },
+    fmta("limits(times.circle.big)_(<>)^(<>)<>", {i(2, "i=0"), i(1,"n"), i(0)}),
     { condition = is_math_mode, show_condition = is_math_mode }
   ),
 
@@ -103,4 +129,5 @@ return {
       end
     ) })
   ),
+
 }

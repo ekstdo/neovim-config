@@ -109,7 +109,7 @@ vim.keymap.set("n", "]b", "<cmd>bnext<cr>", { desc = "Next Buffer" })
 vim.keymap.set("n", "<leader>bb", "<cmd>e #<cr>", { desc = "Switch to Other Buffer" })
 vim.keymap.set("n", "<leader>bd", "<cmd>bd<cr>", { desc = "Delete Buffer and Window" })
 
-vim.keymap.set({ "i", "x", "n", "s" }, "<C-s>", "<cmd>w<cr><esc>", { desc = "Save File" })
+vim.keymap.set({ "i", "x" }, "<C-s>", "<cmd>w<cr><esc>", { desc = "Save File" })
 
 vim.keymap.set("n", "<leader>ww", "<C-W>p", { desc = "Other Window", remap = true })
 vim.keymap.set("n", "<leader>wd", "<C-W>c", { desc = "Delete Window", remap = true })

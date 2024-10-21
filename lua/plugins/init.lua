@@ -18,33 +18,6 @@ end
 
 g.tagbar_position = "rightbelow"
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 local plugin_setups = {
 	-- {{{ COMMON DEPENDENCIES
 	'nvim-tree/nvim-web-devicons', -- icons
@@ -120,11 +93,11 @@ local plugin_setups = {
 				flags = lsp_flags,
 				on_attach = on_attach,
 				-- settings = {
-				-- 	['rust-analyzer'] = {
-				-- 		diagnostics = {
-				-- 			disable = { "unresolved-proc-macro" }
-				-- 		}
-				-- 	}
+				--	['rust-analyzer'] = {
+				--		diagnostics = {
+				--			disable = { "unresolved-proc-macro" }
+				--		}
+				--	}
 				-- }
 			}
 			lspconfig.golangci_lint_ls.setup{}
@@ -132,17 +105,17 @@ local plugin_setups = {
 			lspconfig.asm_lsp.setup{ flags = lsp_flags, on_attach = on_attach }
 			lspconfig.svelte.setup{}
 			-- lspconfig.typst_lsp.setup{
-			-- 	settings = {
-			-- 		-- exportPdf = "onSave" -- Choose onType, onSave or never.
-			-- 		-- serverPath = "" -- Normally, there is no need to uncomment it.
-			-- 	}
+			--	settings = {
+			--		-- exportPdf = "onSave" -- Choose onType, onSave or never.
+			--		-- serverPath = "" -- Normally, there is no need to uncomment it.
+			--	}
 			-- }
 			lspconfig.tinymist.setup{
 				root_dir = function()
 					return vim.fn.getcwd()
 				end,
 				on_init = function(client)
-				  client.offset_encoding = "utf-8"
+					client.offset_encoding = "utf-8"
 				end,
 			}
 			lspconfig.csharp_ls.setup{}
@@ -340,7 +313,9 @@ local plugin_setups = {
 	{ 'hrsh7th/cmp-nvim-lsp', lazy = true , event = "InsertEnter" },
 	{ 'hrsh7th/nvim-cmp', lazy = true, event = "InsertEnter",
 		dependencies = {
-			'hrsh7th/cmp-buffer', 'hrsh7th/cmp-path', 'hrsh7th/cmp-cmdline', 'f3fora/cmp-spell', 'quangnguyen30192/cmp-nvim-ultisnips', 'hrsh7th/cmp-nvim-lsp-signature-help', 'onsails/lspkind.nvim', 'saadparwaiz1/cmp_luasnip'
+			'hrsh7th/cmp-buffer', 'hrsh7th/cmp-path', 'hrsh7th/cmp-cmdline', 'f3fora/cmp-spell',
+			-- 'quangnguyen30192/cmp-nvim-ultisnips',
+			'hrsh7th/cmp-nvim-lsp-signature-help', 'onsails/lspkind.nvim', 'saadparwaiz1/cmp_luasnip'
 		},
 		config = function()
 
@@ -359,6 +334,7 @@ local plugin_setups = {
 				snippet = {
 					expand = function(args)
 						 -- vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
+						require('luasnip').lsp_expand(args.body)
 					end,
 				},
 				mapping = {
@@ -378,23 +354,23 @@ local plugin_setups = {
 					end),
 
 					["<Tab>"] = cmp.mapping(function(fallback)
-					  if cmp.visible() then
-						cmp.select_next_item()
-					  elseif luasnip.locally_jumpable(1) then
-						luasnip.jump(1)
-					  else
-						fallback()
-					  end
+						if cmp.visible() then
+							cmp.select_next_item()
+						elseif luasnip.locally_jumpable(1) then
+							luasnip.jump(1)
+						else
+							fallback()
+						end
 					end, { "i", "s" }),
 
 					["<S-Tab>"] = cmp.mapping(function(fallback)
-					  if cmp.visible() then
-						cmp.select_prev_item()
-					  elseif luasnip.locally_jumpable(-1) then
-						luasnip.jump(-1)
-					  else
-						fallback()
-					  end
+						if cmp.visible() then
+							cmp.select_prev_item()
+						elseif luasnip.locally_jumpable(-1) then
+							luasnip.jump(-1)
+						else
+							fallback()
+						end
 					end, { "i", "s" }),
 					-- ['<esc>'] = cmp.mapping.abort()
 				},
@@ -403,7 +379,7 @@ local plugin_setups = {
 						-- { name = "codeium" },
 						{ name = 'path' },
 						{ name = 'nvim_lsp', keyword_length = 2 },
-						{ name = 'ultisnips' },
+						-- { name = 'ultisnips' },
 						{ name = 'cmp_tabnine' },
 						{ name = 'luasnip' },
 				}, {{ name = 'buffer', keyword_length = 3 }, { name = 'spell' }}),
@@ -428,16 +404,16 @@ local plugin_setups = {
 		end
 	},
 	-- { 'sirver/ultisnips',
-	-- 	requires = { {'nvim-lua/plenary.nvim'} }, --because of plenary path
-	-- 	dependencies = {'honza/vim-snippets'},
-	-- 	keys = {"<leader>cs", ":UltiSnipsEdit<CR>", desc="snippets", unpack(opts)},
-	-- 	lazy = false,
-	-- 	config = function()
-	-- 		g.UltiSnipsExpandTrigger = '<tab>'
-	-- 		g.UltiSnipsJumpForwardTrigger = '<tab>'
-	-- 		g.UltiSnipsJumpBackwardTrigger = '<s-tab>'
-	-- 		g.UltiSnipsSnippetDirectories={ g.CURRENT_CONFIG_FOLDER .. 'ultisnippets' }
-	-- 	end
+	--	requires = { {'nvim-lua/plenary.nvim'} }, --because of plenary path
+	--	dependencies = {'honza/vim-snippets'},
+	--	keys = {"<leader>cs", ":UltiSnipsEdit<CR>", desc="snippets", unpack(opts)},
+	--	lazy = false,
+	--	config = function()
+	--		g.UltiSnipsExpandTrigger = '<tab>'
+	--		g.UltiSnipsJumpForwardTrigger = '<tab>'
+	--		g.UltiSnipsJumpBackwardTrigger = '<s-tab>'
+	--		g.UltiSnipsSnippetDirectories={ g.CURRENT_CONFIG_FOLDER .. 'ultisnippets' }
+	--	end
 	-- },
 	{
 		"L3MON4D3/LuaSnip",
@@ -448,17 +424,101 @@ local plugin_setups = {
 		build = "make install_jsregexp",
 		config = function()
 			local ls = require("luasnip")
-			require("luasnip.loaders.from_vscode").lazy_load()
-			require("luasnip.loaders.from_lua").load({paths = "~/.config/nvim/LuaSnip/"})
 
-			ls.config.set_config({ -- Setting LuaSnip config
+
+
+			local util = require("luasnip.util.util")
+			local node_util = require("luasnip.nodes.util")
+
+			ls.setup({
+
 
 				-- Enable autotriggered snippets
 				enable_autosnippets = true,
+				update_events = {"TextChanged", "TextChangedI"},
 
 				-- Use Tab (or some other key if you prefer) to trigger visual selection
 				store_selection_keys = "<Tab>",
+				parser_nested_assembler = function(_, snippetNode)
+					local select = function(snip, no_move, dry_run)
+						if dry_run then
+							return
+						end
+						snip:focus()
+						-- make sure the inner nodes will all shift to one side when the
+						-- entire text is replaced.
+						snip:subtree_set_rgrav(true)
+						-- fix own extmark-gravities, subtree_set_rgrav affects them as well.
+						snip.mark:set_rgravs(false, true)
+
+						-- SELECT all text inside the snippet.
+						if not no_move then
+							vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", true)
+							node_util.select_node(snip)
+						end
+					end
+
+					local original_extmarks_valid = snippetNode.extmarks_valid
+					function snippetNode:extmarks_valid()
+						-- the contents of this snippetNode are supposed to be deleted, and
+						-- we don't want the snippet to be considered invalid because of
+						-- that -> always return true.
+						return true
+					end
+
+					function snippetNode:init_dry_run_active(dry_run)
+						if dry_run and dry_run.active[self] == nil then
+							dry_run.active[self] = self.active
+						end
+					end
+
+					function snippetNode:is_active(dry_run)
+						return (not dry_run and self.active) or (dry_run and dry_run.active[self])
+					end
+
+					function snippetNode:jump_into(dir, no_move, dry_run)
+						self:init_dry_run_active(dry_run)
+						if self:is_active(dry_run) then
+							-- inside snippet, but not selected.
+							if dir == 1 then
+								self:input_leave(no_move, dry_run)
+								return self.next:jump_into(dir, no_move, dry_run)
+							else
+								select(self, no_move, dry_run)
+								return self
+							end
+						else
+							-- jumping in from outside snippet.
+							self:input_enter(no_move, dry_run)
+							if dir == 1 then
+								select(self, no_move, dry_run)
+								return self
+							else
+								return self.inner_last:jump_into(dir, no_move, dry_run)
+							end
+						end
+					end
+
+					-- this is called only if the snippet is currently selected.
+					function snippetNode:jump_from(dir, no_move, dry_run)
+						if dir == 1 then
+							if original_extmarks_valid(snippetNode) then
+								return self.inner_first:jump_into(dir, no_move, dry_run)
+							else
+								return self.next:jump_into(dir, no_move, dry_run)
+							end
+						else
+							self:input_leave(no_move, dry_run)
+							return self.prev:jump_into(dir, no_move, dry_run)
+						end
+					end
+
+					return snippetNode
+				end,
 			})
+
+			require("luasnip.loaders.from_vscode").lazy_load()
+			require("luasnip.loaders.from_lua").load({paths = "~/.config/nvim/LuaSnip/"})
 		end
 	},
 	{ 'simrat39/rust-tools.nvim', lazy = true, ft = {"rust"},
@@ -479,18 +539,14 @@ local plugin_setups = {
 		end
 	},
 	{'tzachar/cmp-tabnine', build='./install.sh', lazy = true, event = "InsertEnter"},
-	{
-		"Exafunction/codeium.nvim",
-		dependencies = {
-			"nvim-lua/plenary.nvim",
-			"hrsh7th/nvim-cmp",
-		},
-		config = function()
-			require("codeium").setup({
-			})
-		end,
-		lazy = true, event = "InsertEnter"
-	},
+	-- {
+	-- 	"Exafunction/codeium.nvim",
+	-- 	dependencies = {
+	-- 		"nvim-lua/plenary.nvim",
+	-- 		"hrsh7th/nvim-cmp",
+	-- 	},
+	-- 	lazy = true, event = "InsertEnter"
+	-- },
 
 	-- }}}
 	{
@@ -561,9 +617,14 @@ local plugin_setups = {
 	{ 'folke/which-key.nvim'
 		, lazy=true
 		, keys="<leader>"
+		, opts = { triggers = { "<leader>" }, triggers_blacklist = { i = {"<leader>"} }, notify = false, defer = function(ctx)
+			if vim.list_contains({ "d", "y" }, ctx.operator) then
+				return true
+			end
+			return vim.list_contains({ "<C-V>", "V" }, ctx.mode)
+		end, }
 		, config = function ()
 			local wk = require("which-key")
-			wk.setup({ triggers = { "<leader>" }, triggers_blacklist = { i = {"<leader>"} } })
 
 			wk.add(
 			{
@@ -632,6 +693,7 @@ local plugin_setups = {
 				{ "<leader>wt", desc = "default in new tab" },
 				{ "<leader>ww", desc = "default index" },
 				{ "<leader>w|", desc = "vertsplit" },
+				{ "<leader>p", group = "preview" },
 			})
 		end
 	},
@@ -668,6 +730,10 @@ local plugin_setups = {
 			keymap("n", BINDINGS == "colemak" and "<leader>sv" or "<leader>sp", ":call WindowSwap#DoWindowSwap()<CR>", opts)
 			keymap("n", "<leader>se", ":call WindowSwap#EasyWindowSwap()<CR>", opts)
 		end
+	},
+	{
+		'jinh0/eyeliner.nvim',
+		opts = { highlight_on_key = true, dim = true },
 	},
 	{'wfxr/minimap.vim', cmd = {'Minimap', 'MinimapToggle'}, keys = {{"<leader>sm", ":Minimap<CR>", desc = "Code Minimap"}} },
 	'kana/vim-metarw', -- fake paths 
@@ -772,6 +838,9 @@ local plugin_setups = {
 		ft = 'typst',
 		version = '1.*',
 		build = function() require 'typst-preview'.update() end,
+		keys = {
+			{"<leader>pt", ":TypstPreview<CR>", desc="Typst Preview"}
+		}
 	},
 	{
 		'TobinPalmer/pastify.nvim',
