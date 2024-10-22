@@ -733,13 +733,64 @@ local plugin_setups = {
 	},
 	{
 		'jinh0/eyeliner.nvim',
-		opts = { highlight_on_key = true, dim = true },
+		config = function()
+			require'eyeliner'.setup {
+				-- show highlights only after keypress
+				highlight_on_key = true,
+
+				-- dim all other characters if set to true (recommended!)
+				dim = true,	
+
+				-- set the maximum number of characters eyeliner.nvim will check from
+				-- your current cursor position; this is useful if you are dealing with
+				-- large files: see https://github.com/jinh0/eyeliner.nvim/issues/41
+				max_length = 9999,
+
+				-- filetypes for which eyeliner should be disabled;
+				-- e.g., to disable on help files:
+				-- disabled_filetypes = {"help"}
+				disabled_filetypes = {},
+
+				-- buftypes for which eyeliner should be disabled
+				-- e.g., disabled_buftypes = {"nofile"}
+				disabled_buftypes = {},
+
+				-- add eyeliner to f/F/t/T keymaps;
+				-- see section on advanced configuration for more information
+				default_keymaps = BINDINGS ~= "colemak",
+			}
+		
+		if BINDINGS == "colemak" then
+			vim.keymap.set(
+				{"n", "x", "o"},
+				"f",
+				function() 
+					require("eyeliner").highlight({ forward = true })
+					return "f"
+				end,
+				{expr = true, remap = false}
+			)
+			vim.keymap.set(
+				{"n", "x", "o"},
+				"w",
+				function() 
+					require("eyeliner").highlight({ forward = true })
+					return "t"
+				end,
+				{expr = true, remap = false}
+			)
+		end
+		end
+	},
+	{
+		'jinh0/eyeliner.nvim',
+		opts = { highlight_on_key = true, dim = true, default_keymaps = false },
 	},
 	{'wfxr/minimap.vim', cmd = {'Minimap', 'MinimapToggle'}, keys = {{"<leader>sm", ":Minimap<CR>", desc = "Code Minimap"}} },
 	'kana/vim-metarw', -- fake paths 
 	{'majutsushi/tagbar', lazy = true, cmd = {'Tagbar', 'TagbarToggle'}, keys = {{"<leader>st", ":TagbarToggle<CR>", "Tagbar"}} },
 	{'mbbill/undotree', lazy = true, cmd = {'UndoTree', 'UndotreeToggle' }, keys = {{"<leader>su", ":UndotreeToggle<CR>", "Undotree"}} },
-	{'KabbAmine/vCoolor.vim', lazy = true, cmd = 'VCoolor', keys = {"<leader>fc", ":VCoolor<CR>", desc="Color picker"}},
+	{'KabbAmine/vCoolor.vim', lazy = true, cmd = {'VCoolor'}, keys = {"<leader>fc", ":VCoolor<CR>", desc="Color picker"}},
 	{'kabbamine/zeavim.vim', lazy = true, keys = { {"<leader>sz", "<Plug>Zeavim"}, '<Plug>Zeavim', '<Plug>ZVVisSelection', '<Plug>ZVOperator', '<Plug>ZVKeyDocset' }, cmd = { 'Zeavim', 'ZeavimV'}},
 	{'is0n/jaq-nvim', keys={{"<leader>sq", ":Jaq<CR>", desc="Quickrun"}}, opts = {
 		cmds = {
