@@ -144,6 +144,7 @@ local plugin_setups = {
 			capabilities.textDocument.completion.completionItem.snippetSupport = true
 
 			lspconfig.emmet_language_server.setup{
+				capabilities = capabilities,
 				filetypes = { "css", "eruby", "html", "javascript", "javascriptreact", "less", "sass", "scss", "pug", "typescriptreact" },
 			}
 
