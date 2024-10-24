@@ -7,6 +7,6 @@
 
 ## dependencies 
 
-- the language servers (pyright, rust-analyzer, [emmet-ls](https://github.com/aca/emmet-ls) ...)
+- the language servers (pyright, rust-analyzer, [emmet-language-server](https://github.com/olrtg/emmet-language-servers) ...)
 
 - universal ctags 

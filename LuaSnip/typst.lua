@@ -4,17 +4,30 @@ local function is_math_mode()
   local is_math_mode = false
   if highlighter.active[buf] then
    -- treesitter highlighting is enabled
-    local obj = vim.inspect_pos()["treesitter"]
-    for i = #obj, 1, -1 do
-      if obj[i]["capture"] == "string" or obj[i]["capture"] == "spell" then
-        break
+    local inspect_out = vim.inspect_pos()
+    local obj = inspect_out["treesitter"]
+    if #obj == 0 then
+      obj = inspect_out["semantic_tokens"]
+      for i = 1, #obj do
+        local str = obj[i]["opts"]["hl_group"]
+        if string.find(str, "math") then
+          is_math_mode = true
+          break
+        end
       end
+    else 
+      for i = #obj, 1, -1 do
+        if obj[i]["capture"] == "string" or obj[i]["capture"] == "spell" then
+          break
+        end
 
-      if obj[i]["capture"] == "markup.math" then
-        is_math_mode = true
-        break
+        if obj[i]["capture"] == "markup.math" then
+          is_math_mode = true
+          break
+        end
       end
     end
+
   else 
    -- treesitter highlighting is disabled
    -- using synstack instead
@@ -91,13 +104,13 @@ return {
   ),
 
   ls.snippet(
-    { trig = "__", snippetType="autosnippet" },
+    { trig = "__", snippetType="autosnippet", wordTrig = false },
     fmta("_(<>)<>", {i(1), i(0)}),
     { condition = is_math_mode, show_condition = is_math_mode }
   ),
 
   ls.snippet(
-    { trig = "^^", snippetType="autosnippet" },
+    { trig = "^^", snippetType="autosnippet", wordTrig = false },
     fmta("^(<>)<>", {i(1), i(0)}),
     { condition = is_math_mode, show_condition = is_math_mode }
   ),
