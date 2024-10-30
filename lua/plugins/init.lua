@@ -292,6 +292,9 @@ local plugin_setups = {
 			{ "<leader>mo", function() require("neotest").output_panel.open() end, unpack(opts), desc="output panel" },
 			{ "<leader>md", function() require("neotest").run.run({strategy = "dap"}) end, unpack(opts), desc="debug" },
 			{ "<leader>mx", function() require("neotest").run.stop() end, unpack(opts), desc="stop" },
+			{ "<leader>mp", function() require("neotest").jump.prev({status = 'failed'}) end, unpack(opts), desc="jump previous failed" },
+			{ "<leader>mn", function() require("neotest").jump.next({status = 'failed'}) end, unpack(opts), desc="jump next failed" },
+			{ "<leader>ms", function() require("neotest").summary.toggle() end, unpack(opts), desc="toggle summary" },
 		}
 	},
 	{ 'rcarriga/nvim-dap-ui', requires = {'mfussenegger/nvim-dap'}, config = function ()
@@ -570,23 +573,7 @@ local plugin_setups = {
 			require("luasnip.loaders.from_lua").load({paths = "~/.config/nvim/LuaSnip/"})
 		end
 	},
-	{ 'simrat39/rust-tools.nvim', lazy = true, ft = {"rust"},
-			after = "nvim-lspconfig", config =  function()
-			local rt = require("rust-tools")
-
-			rt.setup({
-				server = {
-					on_attach = function(_, bufnr)
-						local bufopts = { noremap=true, silent=true, buffer=bufnr }
-						-- Hover actions
-						vim.keymap.set("n", "<C->", rt.hover_actions.hover_actions, bufopts)
-						-- Code action groups
-						vim.keymap.set("n", "<Leader>a", rt.code_action_group.code_action_group, bufopts)
-					end,
-				},
-			})
-		end
-	},
+	{ 'mrcjkb/rustaceanvim', lazy = false, version = '^5'},
 	{'tzachar/cmp-tabnine', build='./install.sh', lazy = true, event = "InsertEnter"},
 	-- {
 	-- 	"Exafunction/codeium.nvim",
@@ -620,7 +607,7 @@ local plugin_setups = {
 		g.VM_mouse_mappings = 1
 	end, keys = {{"<C-down>", "<Plug>newCursor<CR>", unpack(opts)}}},
 	{"ziontee113/color-picker.nvim",
-		setup = true, lazy = true, keys = {{"<leader>s", ":PickColor<cr>", desc = "Color Picker"}}
+		setup = true, lazy = true, keys = {{"<leader>sa", ":PickColor<cr>", desc = "Color Picker"}}
 	},
 	{'rhysd/vim-grammarous', lazy = true,
 		keys = {{"<leader>tg", "<cmd>GrammarousCheck<CR>", desc = "Grammar checker", unpack(opts)}}, cmd = {'GrammarousCheck'} },
@@ -664,8 +651,6 @@ local plugin_setups = {
 
 
 	{ 'folke/which-key.nvim'
-		, lazy=true
-		, keys="<leader>"
 		, opts = { triggers = { "<leader>" }, triggers_blacklist = { i = {"<leader>"} }, notify = false, defer = function(ctx)
 			if vim.list_contains({ "d", "y" }, ctx.operator) then
 				return true

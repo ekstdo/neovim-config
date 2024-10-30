@@ -38,6 +38,7 @@ if BINDINGS == "colemak" then
   vim.keymap.set("", "tt", "cc", { desc = "Cut" })
   vim.keymap.set("", "ti", "ci", { desc = "Cut inside" })
   vim.keymap.set("", "ta", "ca", { desc = "Cut around" })
+  vim.keymap.set("", "di", "di", { desc = "Delete inside" })
 
   vim.keymap.set("", "l", "u", { desc = "Undo" })
   vim.keymap.set("", "j", "<C-r>", { desc = "Redo" })
