@@ -127,11 +127,25 @@ return {
     { condition = is_math_mode, show_condition = is_math_mode }
   ),
 
+
+  ls.snippet(
+    { trig = "([%a][%d_]?%d?)hat", snippetType="autosnippet", wordTrig=false, regTrig=true },
+    fmta("hat(<>)", {f( function(_, snip) return snip.captures[1] end )}),
+    { condition = is_math_mode, show_condition = is_math_mode }
+  ),
+
   ls.snippet(
     { trig = "(%b())xb", dscr="underbrace", snippetType="autosnippet", wordTrig=false, regTrig=true },
     fmta("underbrace(<>, <>)", {f( function(_, snip) return string.sub(snip.captures[1], 2, -2) end ), i(1)}),
     { condition = is_math_mode, show_condition = is_math_mode }
   ),
+
+  ls.snippet(
+    { trig = "figure(%b())nofig", dscr="undo figure", snippetType="autosnippet", wordTrig=false, regTrig=true },
+    fmta("align(center)[<> <>]", {f( function(_, snip) return string.sub(snip.captures[1], 2, -2) end ), i(1)})
+  ),
+
+
 
   ls.snippet(
     { trig = "(%b())sympy", dscr="sympy", snippetType="autosnippet", wordTrig=false, regTrig=true },

@@ -321,12 +321,7 @@ return {
     fmta("┌<top_border>┐\n│ <> │\n└<top_border>┘<>", {top_border = f(function(args) return string.rep("─", #args[1][1] +2) end, {1}), i(1), i(0)})
   ),
 }
--- snippet box "Box"
--- `!p snip.rv = '┌' + '─' * (len(t[1]), + 2), + '┐'`
--- │ $1 │
--- `!p snip.rv = '└' + '─' * (len(t[1]), + 2), + '┘'`
--- $0
--- endsnippet
+
 -- snippet reddd "mark in red (Latex)," wA
 -- \\textcolor{red}{$0}
 -- endsnippet

@@ -26,6 +26,26 @@ local plugin_setups = {
 
 	-- {{{ DEVELOPER ESSENTIALS
 	'tpope/vim-fugitive', -- git integration
+	{
+		"kdheepak/lazygit.nvim",
+		lazy = true,
+		cmd = {
+			"LazyGit",
+			"LazyGitConfig",
+			"LazyGitCurrentFile",
+			"LazyGitFilter",
+			"LazyGitFilterCurrentFile",
+		},
+		-- optional for floating window border decoration
+		dependencies = {
+			"nvim-lua/plenary.nvim",
+		},
+		-- setting the keybinding for LazyGit with 'keys' is recommended in
+		-- order to load the plugin when the command is run for the first time
+		keys = {
+			{ "<leader>sg", "<cmd>LazyGit<cr>", desc = "LazyGit" }
+		}
+	},
 	--  }}}
 
 
@@ -245,7 +265,35 @@ local plugin_setups = {
 	},
 
 	{ 'theHamsta/nvim-dap-virtual-text', requires = {'mfussenegger/nvim-dap'}},
-	{ "nvim-neotest/nvim-nio" },
+	{
+		"nvim-neotest/neotest",
+		dependencies = {
+			"nvim-neotest/nvim-nio",
+			"nvim-lua/plenary.nvim",
+			"antoinemadec/FixCursorHold.nvim",
+			"nvim-treesitter/nvim-treesitter",
+
+			-- Adapters
+			"nvim-neotest/neotest-python"
+		},
+		lazy = true,
+		config = function() 
+			require("neotest").setup({
+				adapters = {
+					require("neotest-python")({
+						args = { "-s" }
+					})
+				}
+			})
+		end,
+		keys = {
+			{ "<leader>mr", function() require("neotest").run.run() end, unpack(opts), desc="nearest" },
+			{ "<leader>mf", function() require("neotest").run.run(vim.fn.expand("%")) end, unpack(opts), desc="file" },
+			{ "<leader>mo", function() require("neotest").output_panel.open() end, unpack(opts), desc="output panel" },
+			{ "<leader>md", function() require("neotest").run.run({strategy = "dap"}) end, unpack(opts), desc="debug" },
+			{ "<leader>mx", function() require("neotest").run.stop() end, unpack(opts), desc="stop" },
+		}
+	},
 	{ 'rcarriga/nvim-dap-ui', requires = {'mfussenegger/nvim-dap'}, config = function ()
 		local dap, dapui = require("dap"), require("dapui")
 		dapui.setup()
@@ -631,6 +679,7 @@ local plugin_setups = {
 			{
 				{ "<leader>+", desc = "increase" },
 				{ "<leader>-", desc = "decrease" },
+				{ "<leader>m", group = "test" },
 				{ "<leader>T", group = "table" },
 				{ "<leader>TT", desc = "tableize delim" },
 				{ "<leader>Ta", group = "append" },
@@ -699,7 +748,7 @@ local plugin_setups = {
 		end
 	},
 	{
-		'nvim-telescope/telescope.nvim', tag = '0.1.6',
+		'nvim-telescope/telescope.nvim',
 		requires = { {'nvim-lua/plenary.nvim'} },
 		config = function()
 			require('telescope').setup()
