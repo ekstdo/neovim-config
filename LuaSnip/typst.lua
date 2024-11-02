@@ -142,7 +142,7 @@ return {
 
   ls.snippet(
     { trig = "figure(%b())nofig", dscr="undo figure", snippetType="autosnippet", wordTrig=false, regTrig=true },
-    fmta("align(center)[<> <>]", {f( function(_, snip) return string.sub(snip.captures[1], 2, -2) end ), i(1)})
+    fmta("align(center)[#<> <>]", {f( function(_, snip) return string.sub(snip.captures[1], 2, -2) end ), i(1)})
   ),
 
 
