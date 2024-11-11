@@ -51,41 +51,41 @@ end
 local ls = require("luasnip");
 
 return {
-  ls.snippet(
+  s(
     { trig = "$$", snippetType="autosnippet", wordTrig=false },
     fmta("$<> $<>", {i(1), i(0)})
   ),
 
-  ls.snippet(
+  s(
     { trig = "code", dscr = "codeblock", wordTrig=false },
     fmta("```<>\n<>\n```\n<>", {i(1), i(2), i(0)})
   ),
 
-  ls.snippet(
+  s(
     { trig = "sum", snippetType="autosnippet", wordTrig=true },
     fmta("sum_(<>)^(<>)<>", {i(2, "i=0"), i(1,"n"), i(0)}),
     { condition = is_math_mode, show_condition = is_math_mode }
   ),
 
-  ls.snippet(
+  s(
     { trig = "prod", wordTrig=true },
     fmta("prod_(<>)^(<>)<>", {i(2, "i=0"), i(1,"n"), i(0)}),
     { condition = is_math_mode, show_condition = is_math_mode }
   ),
 
-  ls.snippet(
+  s(
     { trig = "tensorprod", wordTrig=true },
     fmta("limits(times.circle.big)_(<>)^(<>)<>", {i(2, "i=0"), i(1,"n"), i(0)}),
     { condition = is_math_mode, show_condition = is_math_mode }
   ),
 
-  ls.snippet(
+  s(
     { trig = "over" },
     fmta("limits(<>)^(<>)<>", {i(1), i(2), i(0)}),
     { condition = is_math_mode, show_condition = is_math_mode }
   ),
 
-  ls.snippet(
+  s(
     { trig = "([%a%)%]%}])(%d)", snippetType="autosnippet", wordTrig=false, regTrig=true },
     fmta("<>_<>", {
       f( function(_, snip) return snip.captures[1] end ),
@@ -94,7 +94,7 @@ return {
     { condition = is_math_mode, show_condition = is_math_mode }
   ),
 
-  ls.snippet(
+  s(
     { trig = "([%a%)%]%}])_(%d%d)", snippetType="autosnippet", wordTrig=false, regTrig=true },
     fmta("<>_(<>)", {
       f( function(_, snip) return snip.captures[1] end ),
@@ -103,51 +103,78 @@ return {
     { condition = is_math_mode, show_condition = is_math_mode }
   ),
 
-  ls.snippet(
+  s(
     { trig = "__", snippetType="autosnippet", wordTrig = false },
     fmta("_(<>)<>", {i(1), i(0)}),
     { condition = is_math_mode, show_condition = is_math_mode }
   ),
 
-  ls.snippet(
+  s(
     { trig = "^^", snippetType="autosnippet", wordTrig = false },
     fmta("^(<>)<>", {i(1), i(0)}),
     { condition = is_math_mode, show_condition = is_math_mode }
   ),
 
-  ls.snippet(
+  s(
     { trig = "([%a][%d_]?%d?)bar", snippetType="autosnippet", wordTrig=false, regTrig=true },
     fmta("overline(<>)", {f( function(_, snip) return snip.captures[1] end )}),
     { condition = is_math_mode, show_condition = is_math_mode }
   ),
 
-  ls.snippet(
+  s(
     { trig = "([%a][%d_]?%d?)til", snippetType="autosnippet", wordTrig=false, regTrig=true },
     fmta("tilde(<>)", {f( function(_, snip) return snip.captures[1] end )}),
     { condition = is_math_mode, show_condition = is_math_mode }
   ),
 
 
-  ls.snippet(
+  s(
     { trig = "([%a][%d_]?%d?)hat", snippetType="autosnippet", wordTrig=false, regTrig=true },
     fmta("hat(<>)", {f( function(_, snip) return snip.captures[1] end )}),
     { condition = is_math_mode, show_condition = is_math_mode }
   ),
 
-  ls.snippet(
+  s(
     { trig = "(%b())xb", dscr="underbrace", snippetType="autosnippet", wordTrig=false, regTrig=true },
     fmta("underbrace(<>, <>)", {f( function(_, snip) return string.sub(snip.captures[1], 2, -2) end ), i(1)}),
     { condition = is_math_mode, show_condition = is_math_mode }
   ),
 
-  ls.snippet(
+  s(
     { trig = "figure(%b())nofig", dscr="undo figure", snippetType="autosnippet", wordTrig=false, regTrig=true },
     fmta("align(center)[#<> <>]", {f( function(_, snip) return string.sub(snip.captures[1], 2, -2) end ), i(1)})
   ),
 
+  s(
+    { trig = "TABLE(%d+)x(%d+)", dscr="generate table", snippetType="autosnippet", wordTrig=false, regTrig=true },
+    fmta([[table(
+  columns: <>,
+  <>
+)]], {
+      f(function(_, snip) return snip.captures[2] end ),
+      d(1, function(_, snip)
+        local rows = tonumber(snip.captures[1])
+        local columns = tonumber(snip.captures[2])
+        local snip_inner = {}
 
+        local counter = 0
+        for _=1,rows  do
+          for _=1,columns do
+            counter = counter + 1
+            table.insert(snip_inner, t"[")
+            table.insert(snip_inner, i(counter))
+            table.insert(snip_inner, t"], ")
+          end
+          table.insert(snip_inner, t{"", "  "}) -- inserting a newline
+        end
 
-  ls.snippet(
+        return sn(nil, snip_inner)
+      end)
+    })
+
+  ),
+
+  s(
     { trig = "(%b())sympy", dscr="sympy", snippetType="autosnippet", wordTrig=false, regTrig=true },
     fmta("<>", {f( function(_, snip)
         local output = vim.fn.system{'python', '-c', [[print(__import__('sympy').sympify(']] .. string.sub(snip.captures[1], 2, -2) .. [['))]] }

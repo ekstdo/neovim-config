@@ -132,10 +132,10 @@ vim.keymap.set("n", "<S-Left>", "v<Left>", { desc = "Visual Left" })
 vim.keymap.set("n", "<S-Down>", "v<Down>", { desc = "Visual Down" })
 
 
-vim.keymap.set("", "<leader>tc", "yy$p", { desc = "Duplicate line" })
+-- vim.keymap.set("", "<leader>tc", "yy$p", { desc = "Duplicate line" })
 vim.keymap.set("", "<leader>tde", "<cmd>v/./d<CR>", { desc = "Remove empty lines" })
-vim.keymap.set("", "<leader>tts", ":set tabstop=2 shiftwidth=2 expandtab | retab<Home>", { desc = "Tabs to spaces" })
-vim.keymap.set("", "<leader>tw", "<cmd>set wrap!<CR>", { desc = "Tabs to spaces" })
+vim.keymap.set("", "<leader>tts", "<cmd>set tabstop=2 shiftwidth=2 expandtab | retab<Home>", { desc = "Tabs to spaces" })
+vim.keymap.set("", "<leader>tw", "<cmd>set wrap!<CR>", { desc = "toggle text wrap " })
 vim.keymap.set("t", "<tab>", "<tab>", { desc = "just tab pls" })
 
 run = function(e)
