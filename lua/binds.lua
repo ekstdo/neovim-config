@@ -133,8 +133,11 @@ vim.keymap.set("n", "<S-Down>", "v<Down>", { desc = "Visual Down" })
 
 
 -- vim.keymap.set("", "<leader>tc", "yy$p", { desc = "Duplicate line" })
+-- replaced, as ccv/yyp is shorter
+vim.keymap.set("", "<leader>tc", "<cmd>diffthis<CR>", {desc = "Compare this"})
+vim.keymap.set("", "<leader>to", "<cmd>diffoff<CR>", {desc = "turn comparison Off"})
 vim.keymap.set("", "<leader>tde", "<cmd>v/./d<CR>", { desc = "Remove empty lines" })
-vim.keymap.set("", "<leader>tts", "<cmd>set tabstop=2 shiftwidth=2 expandtab | retab<Home>", { desc = "Tabs to spaces" })
+vim.keymap.set("", "<leader>tts", ":set tabstop=2 shiftwidth=2 expandtab | retab<Home>", { desc = "Tabs to spaces" })
 vim.keymap.set("", "<leader>tw", "<cmd>set wrap!<CR>", { desc = "toggle text wrap " })
 vim.keymap.set("t", "<tab>", "<tab>", { desc = "just tab pls" })
 
@@ -184,8 +187,7 @@ str = interp((BINDINGS == "colemak" and colemak_remap .. [[
 <leader>wa:<c-w><Left>
 <leader>ws:<c-w><Right>
 <leader>wr:<c-w><Down>
-]] or "") .. [[<C-BS>:X<Esc>lbce
-<up>:gk
+]] or "") .. [[<up>:gk
 <down>:gj
 <Home>:g0
 <End>:g$
@@ -207,8 +209,8 @@ ss:<C-w>>
 <leader>sl::set number!<CR>
 <leader>ttt::Pantran<CR>]], { pandocParam = vim.g.md_args })
 
-vim.keymap.set("i", "<C-Bs>", "<C-w>", { desc = "Window" })
---vim.keymap.set("i", "<C-del>", "<C-right><C-w>", { desc = "Delete word" })
+vim.keymap.set("i", "<C-BS>", "<C-w>", { desc = "Delete Word", noremap=true})
+vim.keymap.set("i", "<C-del>", "<C-right><C-w>", { desc = "Delete word", noremap=true })
 vim.keymap.set("i", "<C-p>", "<c-g>u<Esc>[s1z=`]a<c-g>u", { desc = "Fix last spelling mistake" })
 vim.keymap.set("i", "<C-a>", "<Esc>ggVG<CR>", { desc = "Select all" })
 

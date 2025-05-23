@@ -97,7 +97,49 @@ local plugin_setups = {
 			local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
 			local lspconfig = require('lspconfig')
-			lspconfig.pylsp.setup{}
+			lspconfig.ruff.setup({
+				init_options = {
+					settings = {
+						lineLength = 100,
+						lint = {
+							ignore = {'W391', 'W191', 'E302'}
+						}
+					}
+				}
+			})
+			vim.api.nvim_create_autocmd("LspAttach", {
+				group = vim.api.nvim_create_augroup('lsp_attach_disable_ruff_hover', { clear = true }),
+				callback = function(args)
+					local client = vim.lsp.get_client_by_id(args.data.client_id)
+					if client == nil then
+						return
+					end
+					if client.name == 'ruff' then
+						-- Disable hover in favor of Pyright
+						client.server_capabilities.hoverProvider = false
+					end
+				end,
+				desc = 'LSP: Disable hover capability from Ruff',
+			})
+
+			lspconfig.basedpyright.setup {
+				settings = {
+					basedpyright = {
+						-- Using Ruff's import organizer
+						disableOrganizeImports = true,
+						analysis = {
+							typeCheckingMode = "basic"
+						}
+					},
+					python = {
+						analysis = {
+							-- Ignore all files for analysis to exclusively use Ruff for linting
+							ignore = { '*' },
+						},
+					},
+				},
+			}
+
 			lspconfig.ts_ls.setup{  on_attach = on_attach, flags = lsp_flags   }
 			lspconfig.elixirls.setup{  cmd = { "elixir-ls" }, on_attach = on_attach   }
 			lspconfig.clangd.setup{    flags = lsp_flags, on_attach = on_attach   }
@@ -108,18 +150,20 @@ local plugin_setups = {
 				on_attach = on_attach,
 				filetypes = { "tex", "plaintex", "bib", "markdown" }
 			}
+			lspconfig.html.setup{}
+			lspconfig.cssls.setup{}
 
-			lspconfig.rust_analyzer.setup{
-				flags = lsp_flags,
-				on_attach = on_attach,
-				-- settings = {
-				--	['rust-analyzer'] = {
-				--		diagnostics = {
-				--			disable = { "unresolved-proc-macro" }
-				--		}
-				--	}
-				-- }
-			}
+			--lspconfig.rust_analyzer.setup{
+			--	flags = lsp_flags,
+			--	on_attach = on_attach,
+			--	-- settings = {
+			--	--	['rust-analyzer'] = {
+			--	--		diagnostics = {
+			--	--			disable = { "unresolved-proc-macro" }
+			--	--		}
+			--	--	}
+			--	-- }
+			--}
 			lspconfig.golangci_lint_ls.setup{}
 			lspconfig.hls.setup{ flags = lsp_flags, on_attach = on_attach }
 			lspconfig.asm_lsp.setup{ flags = lsp_flags, on_attach = on_attach }
@@ -139,6 +183,7 @@ local plugin_setups = {
 				end,
 			}
 			lspconfig.csharp_ls.setup{}
+			lspconfig.vala_ls.setup{}
 			lspconfig.lua_ls.setup {
 				settings = {
 					Lua = {
@@ -187,17 +232,23 @@ local plugin_setups = {
 			end
 		end
 	, dependencies = { 'williamboman/mason-lspconfig.nvim' }},-- lsp config
-	{'williamboman/mason.nvim', config = function()
-		require("mason").setup()
-	end, cmd = { "Mason", "MasonUpdate", "MasonInstall", "MasonUninstall", "MasonUninstallAll", "MasonLog" } }, -- lsp installer
+	{'williamboman/mason.nvim', opts = {
+		ensure_installed = {
+			'debugpy', 'ruff', 'basedpyright'
+		}
+	}, cmd = { "Mason", "MasonUpdate", "MasonInstall", "MasonUninstall", "MasonUninstallAll", "MasonLog" } }, -- lsp installer
 	{'williamboman/mason-lspconfig.nvim', setup=true, dependencies= { 'williamboman/mason.nvim'} },
 	{ 'mfussenegger/nvim-dap', config = function () -- debugger
 			local dap = require("dap")
 
 			dap.adapters.lldb = {
 				type = 'executable',
-				command = '/usr/bin/lldb-vscode', -- adjust as needed, must be absolute path
+				command = '/usr/bin/lldb', -- adjust as needed, must be absolute path
 				name = 'lldb'
+			}
+			dap.adapters.codelldb = {
+				type = "executable",
+				command = "codelldb", -- or if not in $PATH: "/absolute/path/to/codelldb"
 			}
 
 			dap.configurations.cpp = {
@@ -221,18 +272,39 @@ local plugin_setups = {
 					},
 				}
 			dap.configurations.c = dap.configurations.cpp
+			-- dap.configurations.rust = {
+			-- 	{
+			-- 		name = 'Launch',
+			-- 		type = 'lldb',
+			-- 		request = 'launch',
+			-- 		program = function()
+			-- 			return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/target/debug/', 'file')
+			-- 		end,
+			-- 		cwd = '${workFolder}',
+			-- 		stopOnEntry = true,
+			-- 		args = {},
+			-- 		runInTerminal = false
+			-- 	},
+			-- }
+
 			dap.configurations.rust = {
 				{
-					name = 'Launch',
-					type = 'lldb',
-					request = 'launch',
+					name = "Launch file",
+					type = "codelldb",
+					request = "launch",
 					program = function()
 						return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/target/debug/', 'file')
 					end,
-					cwd = '${workFolder}',
+					cwd = '${workspaceFolder}',
 					stopOnEntry = true,
-					args = {},
-					runInTerminal = false
+					args = function ()
+						local t={}
+						local argstring = vim.fn.input("Args: ")
+						for strn in string.gmatch(argstring, "([^%s]+)") do
+							table.insert(t, strn)
+						end
+						return t
+					end,
 				},
 			}
 			dap.adapters.coreclr = {
@@ -282,7 +354,8 @@ local plugin_setups = {
 				adapters = {
 					require("neotest-python")({
 						args = { "-s" }
-					})
+					}),
+					require("rustaceanvim.neotest")
 				}
 			})
 		end,
@@ -317,6 +390,7 @@ local plugin_setups = {
 
 	{
 		'nvimtools/none-ls.nvim',
+		-- dependencies = { "nvimtools/none-ls-extras.nvim", },
 		config = function()
 			local null_ls = require("null-ls")
 			null_ls.setup({
@@ -367,7 +441,8 @@ local plugin_setups = {
 		dependencies = {
 			'hrsh7th/cmp-buffer', 'hrsh7th/cmp-path', 'hrsh7th/cmp-cmdline', 'f3fora/cmp-spell',
 			-- 'quangnguyen30192/cmp-nvim-ultisnips',
-			'hrsh7th/cmp-nvim-lsp-signature-help', 'onsails/lspkind.nvim', 'saadparwaiz1/cmp_luasnip'
+			'hrsh7th/cmp-nvim-lsp-signature-help', 'onsails/lspkind.nvim', 'saadparwaiz1/cmp_luasnip',
+			-- {'tzachar/cmp-tabnine', build='./install.sh', lazy = true, event = "InsertEnter"},
 		},
 		config = function()
 
@@ -389,6 +464,7 @@ local plugin_setups = {
 						require('luasnip').lsp_expand(args.body)
 					end,
 				},
+				reselect = cmp.PreselectMode.None,
 				mapping = {
 					-- ... Your other mappings ...
 					['<CR>'] = cmp.mapping(function(fallback)
@@ -432,7 +508,7 @@ local plugin_setups = {
 						{ name = 'path' },
 						{ name = 'nvim_lsp', keyword_length = 2 },
 						-- { name = 'ultisnips' },
-						{ name = 'cmp_tabnine' },
+						-- { name = 'cmp_tabnine' },
 						{ name = 'luasnip' },
 				}, {{ name = 'buffer', keyword_length = 3 }, { name = 'spell' }}),
 				formatting = {
@@ -574,7 +650,6 @@ local plugin_setups = {
 		end
 	},
 	{ 'mrcjkb/rustaceanvim', lazy = false, version = '^5'},
-	{'tzachar/cmp-tabnine', build='./install.sh', lazy = true, event = "InsertEnter"},
 	-- {
 	-- 	"Exafunction/codeium.nvim",
 	-- 	dependencies = {
@@ -734,23 +809,19 @@ local plugin_setups = {
 	},
 	{
 		'nvim-telescope/telescope.nvim',
-		requires = { {'nvim-lua/plenary.nvim'} },
+		requires = {
+			'nvim-lua/plenary.nvim',
+			'nvim-telescope/telescope-bibtex.nvim'
+		},
+		opts = {},
 		config = function()
-			require('telescope').setup()
-		end, lazy = true, cmd = "Telescope",
+		end,
+		lazy = true, cmd = "Telescope",
 		keys = { {"<leader>nf", ":Telescope find_files<CR>", desc="files", unpack(opts)},
 				{"<leader>nb", ":Telescope buffers<CR>", desc="buffers", unpack(opts)},
 				{"<leader>ns", ":Telescope live_grep<CR>", desc="strings", unpack(opts)},
 				{"<leader>nh", ":Telescope help_tags<CR>", desc="help tags", unpack(opts)}
 			}
-	},
-	{ 'nvim-telescope/telescope-bibtex.nvim'
-		, requires = { 'nvim-telescope/telescope.nvim' }
-		, config = function ()
-			require('telescope').load_extension("bibtex")
-		end,
-		lazy = true, cmd = "Telescope",
-		ft = {'markdown', 'tex'}
 	},
 	{ 't9md/vim-choosewin'
 		, config = function()
@@ -857,7 +928,7 @@ local plugin_setups = {
 		event = "BufEnter",
 		config = function()
 			require 'nvim-treesitter.configs'.setup {
-				ensure_installed = { "c", "lua", "vim", "vimdoc", "query", "python", "css", "html", "haskell", "c_sharp", "markdown", "markdown_inline", "vala", "blueprint" },
+				ensure_installed = { "c", "lua", "vim", "vimdoc", "query",  "css", "html", "haskell", "c_sharp", "markdown", "markdown_inline", "vala", "blueprint" },
 				rainbow = {
 					enable = true,
 					disable = {'bash'} -- please disable bash until I figure #1 out
@@ -918,11 +989,18 @@ local plugin_setups = {
 	{'neoclide/vim-jsx-improve',    ft = {'javascript', 'jsx', 'javascript.jsx'} },
 	{ 'kmonad/kmonad-vim',          ft = {'kbd'} }, -- kmonad config
 	{'slint-ui/vim-slint', ft={'slint'}},
-	{ 'kaarmu/typst.vim', ft = 'typst'},
+	{ 'kaarmu/typst.vim', ft = 'typst', lazy = false},
+	-- {
+	-- 	"OXY2DEV/markview.nvim",
+	-- 	lazy = false
+	-- },
 	{
 		'chomosuke/typst-preview.nvim',
 		ft = 'typst',
 		version = '1.*',
+		opts = {
+			dependencies_bin = { ['tinymist'] = 'tinymist' }
+		},
 		build = function() require 'typst-preview'.update() end,
 		keys = {
 			{"<leader>pt", ":TypstPreview<CR>", desc="Typst Preview"}
@@ -964,7 +1042,15 @@ local plugin_setups = {
 		ft = "norg",
 		dependencies = { { "nvim-lua/plenary.nvim" } },
 	},
-	{ 'mfussenegger/nvim-dap-python', ft = {'python'}, requires = {'mfussenegger/nvim-dap'}},
+	{
+		'mfussenegger/nvim-dap-python',
+		ft = {'python'},
+		requires = {'mfussenegger/nvim-dap'},
+		config = function(_, opts) 
+			local path = "~/.local/share/nvim/mason/packages/debugpy/venv/bin/python"
+			require("dap-python").setup(path)
+		end
+	},
 	{ 'dhruvasagar/vim-table-mode'
 		, ft = {'markdown'}
 		, config = function()
@@ -1034,12 +1120,54 @@ plugin_setups:concat {
 	-- {{{ LaTeX To unicode 
 	{'joom/latex-unicoder.vim'
 	, keys = {
-		{'<leader>fu', ":call unicoder#start(0)<CR>", desc = "convert LaTeX to unicode"}
+		{'<leader>fu', "<cmd>call unicoder#start(0)<CR>", desc = "convert LaTeX to unicode"}
 	} },
 	-- }}}
 	-- {{{ some UI 
 	{'skywind3000/vim-quickui', keys={{'<leader><leader>', ':call quickui#menu#open()<CR>'}, desc="Quickui"}, lazy = true},
 	-- }}}
+	{ "sphamba/smear-cursor.nvim"
+	, opts = {}
+	, keys = {
+		{'<leader>fs', "<cmd>SmearCursorToggle<cr>", desc = 'toggle smear'} }
+	, cmd = "SmearCursorToggle"
+	, lazy = true
+	},
+	{ "olimorris/codecompanion.nvim"
+	, dependencies =
+		{ "nvim-lua/plenary.nvim"
+		, "nvim-treesitter/nvim-treesitter",
+		}
+	, config = function() 
+		require("codecompanion").setup({
+		  adapters = {
+			ollama = function()
+			  return require("codecompanion.adapters").extend("ollama", {
+				env = {
+				  url = "https://ekstdo.ekstdo.xyz/ollama",
+				  api_key = os.getenv("EKSTDO_API_KEY"),
+				},
+				headers = {
+				  ["Content-Type"] = "application/json",
+				  ["Authorization"] = "Bearer ${api_key}",
+				},
+				parameters = {
+				  sync = true,
+				},
+			  })
+			end,
+		  },
+		  strategies = {
+			chat = {
+				adapter = "ollama"
+			},
+			inline = {
+				adapter = "ollama"
+			}
+		  }
+		})
+	end
+	},
 }
 
 

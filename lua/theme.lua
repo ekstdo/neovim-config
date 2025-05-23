@@ -11,7 +11,8 @@ set.colorcolumn = "72"
 g.tex_conceal='abdmg'
 
 run("set list")
-set.listchars = "tab:▸ ,eol:¬,trail:~,extends:>,precedes:<,space:␣"
+-- set.listchars = "tab:▸ ,eol:¬,trail:~,extends:>,precedes:<,space:␣"
+set.listchars = "tab:▸ ,eol:¬,trail:~,extends:>,precedes:<"
 set.tabstop = 4
 set.shiftwidth = 4
 

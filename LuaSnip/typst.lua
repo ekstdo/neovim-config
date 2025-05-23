@@ -1,4 +1,4 @@
-local function is_math_mode() 
+local function is_math_mode()
   local buf = vim.api.nvim_get_current_buf()
   local highlighter = require "vim.treesitter.highlighter"
   local is_math_mode = false
@@ -15,7 +15,7 @@ local function is_math_mode()
           break
         end
       end
-    else 
+    else
       for i = #obj, 1, -1 do
         if obj[i]["capture"] == "string" or obj[i]["capture"] == "spell" then
           break
@@ -28,11 +28,12 @@ local function is_math_mode()
       end
     end
 
-  else 
+  else
    -- treesitter highlighting is disabled
    -- using synstack instead
-    local synstack = vim.iter(vim.fn.synstack(vim.fn.line('.'), vim.fn.col('.') - (vim.fn.col('.')>=2 and 1 or 0))):map(function(v) return vim.fn.synIDattr(v, 'name') end):totable()
-    is_math_mode = table.contains(synstack, "typstMarkupDollar")
+    is_math_mode = vim.api.nvim_eval("typst#in_math()") == 1
+    -- local synstack = vim.iter(vim.fn.synstack(vim.fn.line('.'), vim.fn.col('.') - (vim.fn.col('.')>=2 and 1 or 0))):map(function(v) return vim.fn.synIDattr(v, 'name') end):totable()
+    -- is_math_mode = table.contains(synstack, "typstMarkupDollar")
   end
   return is_math_mode
 end
@@ -68,6 +69,12 @@ return {
   ),
 
   s(
+    { trig = "inv", wordTrig=true },
+    fmta("^(-1)<>", {i(0)}),
+    { condition = is_math_mode, show_condition = is_math_mode }
+  ),
+
+  s(
     { trig = "prod", wordTrig=true },
     fmta("prod_(<>)^(<>)<>", {i(2, "i=0"), i(1,"n"), i(0)}),
     { condition = is_math_mode, show_condition = is_math_mode }
@@ -86,12 +93,21 @@ return {
   ),
 
   s(
+    { trig = "_%((%d+)%)(%d)", snippetType="autosnippet", wordTrig=false, regTrig=true },
+    fmta("_(<><>)", {
+      f( function(_, snip) return snip.captures[1] end ),
+      f( function(_, snip) return snip.captures[2] end ),
+    }),
+    { condition = is_math_mode, show_condition = is_math_mode, priority = 2000 }
+  ),
+
+  s(
     { trig = "([%a%)%]%}])(%d)", snippetType="autosnippet", wordTrig=false, regTrig=true },
     fmta("<>_<>", {
       f( function(_, snip) return snip.captures[1] end ),
       f( function(_, snip) return snip.captures[2] end ),
     }),
-    { condition = is_math_mode, show_condition = is_math_mode }
+    { condition = is_math_mode, show_condition = is_math_mode, priority = 1000 }
   ),
 
   s(
@@ -102,6 +118,10 @@ return {
     }),
     { condition = is_math_mode, show_condition = is_math_mode }
   ),
+
+
+
+
 
   s(
     { trig = "__", snippetType="autosnippet", wordTrig = false },
@@ -116,20 +136,22 @@ return {
   ),
 
   s(
-    { trig = "([%a][%d_]?%d?)bar", snippetType="autosnippet", wordTrig=false, regTrig=true },
+    { trig = "([%a]+[%d_]?%d?)bar", snippetType="autosnippet", wordTrig=false, regTrig=true },
     fmta("overline(<>)", {f( function(_, snip) return snip.captures[1] end )}),
     { condition = is_math_mode, show_condition = is_math_mode }
   ),
 
   s(
-    { trig = "([%a][%d_]?%d?)til", snippetType="autosnippet", wordTrig=false, regTrig=true },
+    { trig = "([%a]+[%d_]?%d?)til", snippetType="autosnippet", wordTrig=false, regTrig=true },
     fmta("tilde(<>)", {f( function(_, snip) return snip.captures[1] end )}),
     { condition = is_math_mode, show_condition = is_math_mode }
   ),
 
 
+
+
   s(
-    { trig = "([%a][%d_]?%d?)hat", snippetType="autosnippet", wordTrig=false, regTrig=true },
+    { trig = "([%a]+[%d_]?%d?)hat", snippetType="autosnippet", wordTrig=false, regTrig=true },
     fmta("hat(<>)", {f( function(_, snip) return snip.captures[1] end )}),
     { condition = is_math_mode, show_condition = is_math_mode }
   ),
@@ -178,10 +200,36 @@ return {
     { trig = "(%b())sympy", dscr="sympy", snippetType="autosnippet", wordTrig=false, regTrig=true },
     fmta("<>", {f( function(_, snip)
         local output = vim.fn.system{'python', '-c', [[print(__import__('sympy').sympify(']] .. string.sub(snip.captures[1], 2, -2) .. [['))]] }
+        if output == nil or string.find(output, "Traceback") ~= nil then
+          return snip.captures[1]
+        end
         output = string.sub(output, 1, -2)
         return output
       end
     ) })
   ),
+
+
+  s(
+    { trig = "cetz-canvas" },
+    fmta([[cetz.canvas({
+  import cetz.draw: *
+  <>
+})]], { i(0) })
+  ),
+
+  s(
+	  { trig = "plot-function"},
+
+	  fmta([[cetz.canvas({
+  import cetz.draw: *
+  import cetz-plot: *
+
+  plot.plot(size: (5, 4), x-tick-step: 1, y-tick-step: 1, {
+    plot.add(domain: (<>, <>), samples: 100, x =>> <>)
+  })
+}
+	  ]], { i(1, "-5"), i(2, "5"), i(3, "calc.sin(x)") })
+  )
 
 }
