@@ -4,8 +4,6 @@ require "binds"
 
 opts = {noremap = true, silent = true}
 
-
-
 g.table_mode_map_prefix = '<leader>T'
 g.table_mode_tableize_d_map = '<leader>TT'
 g.table_mode_insert_column_after_map = '<leader>Tac'
@@ -138,6 +136,7 @@ local plugin_setups = {
 						},
 					},
 				},
+				on_attach = on_attach
 			}
 
 			lspconfig.ts_ls.setup{  on_attach = on_attach, flags = lsp_flags   }
@@ -152,28 +151,10 @@ local plugin_setups = {
 			}
 			lspconfig.html.setup{}
 			lspconfig.cssls.setup{}
-
-			--lspconfig.rust_analyzer.setup{
-			--	flags = lsp_flags,
-			--	on_attach = on_attach,
-			--	-- settings = {
-			--	--	['rust-analyzer'] = {
-			--	--		diagnostics = {
-			--	--			disable = { "unresolved-proc-macro" }
-			--	--		}
-			--	--	}
-			--	-- }
-			--}
-			lspconfig.golangci_lint_ls.setup{}
+			lspconfig.golangci_lint_ls.setup{ on_attach = on_attach }
 			lspconfig.hls.setup{ flags = lsp_flags, on_attach = on_attach }
 			lspconfig.asm_lsp.setup{ flags = lsp_flags, on_attach = on_attach }
-			lspconfig.svelte.setup{}
-			-- lspconfig.typst_lsp.setup{
-			--	settings = {
-			--		-- exportPdf = "onSave" -- Choose onType, onSave or never.
-			--		-- serverPath = "" -- Normally, there is no need to uncomment it.
-			--	}
-			-- }
+			lspconfig.svelte.setup{ on_attach = on_attach }
 			lspconfig.tinymist.setup{
 				root_dir = function()
 					return vim.fn.getcwd()
@@ -181,9 +162,10 @@ local plugin_setups = {
 				on_init = function(client)
 					client.offset_encoding = "utf-8"
 				end,
+				on_attach = on_attach
 			}
-			lspconfig.csharp_ls.setup{}
-			lspconfig.vala_ls.setup{}
+			lspconfig.csharp_ls.setup{on_attach = on_attach}
+			lspconfig.vala_ls.setup{on_attach = on_attach}
 			lspconfig.lua_ls.setup {
 				settings = {
 					Lua = {
@@ -205,12 +187,13 @@ local plugin_setups = {
 						},
 					},
 				},
+				on_attach = on_attach
 			}
 			capabilities.textDocument.completion.completionItem.snippetSupport = true
 
 			lspconfig.emmet_language_server.setup{
 				capabilities = capabilities,
-				filetypes = { "css", "eruby", "html", "javascript", "javascriptreact", "less", "sass", "scss", "pug", "typescriptreact" },
+				filetypes = { "css", "eruby", "html", "javascript", "javascriptreact", "less", "sass", "scss", "pug", "typescriptreact", "svelte" },
 			}
 
 
@@ -231,13 +214,15 @@ local plugin_setups = {
 				vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
 			end
 		end
-	, dependencies = { 'williamboman/mason-lspconfig.nvim' }},-- lsp config
-	{'williamboman/mason.nvim', opts = {
-		ensure_installed = {
-			'debugpy', 'ruff', 'basedpyright'
-		}
-	}, cmd = { "Mason", "MasonUpdate", "MasonInstall", "MasonUninstall", "MasonUninstallAll", "MasonLog" } }, -- lsp installer
-	{'williamboman/mason-lspconfig.nvim', setup=true, dependencies= { 'williamboman/mason.nvim'} },
+	, dependencies = {
+		{'williamboman/mason-lspconfig.nvim', setup=true, dependencies= { 'williamboman/mason.nvim'} },
+		{ 'j-hui/fidget.nvim', opts = {} },
+		{'williamboman/mason.nvim', opts = { -- lsp installer
+			ensure_installed = {
+				'debugpy', 'ruff', 'basedpyright'
+			}
+		}, cmd = { "Mason", "MasonUpdate", "MasonInstall", "MasonUninstall", "MasonUninstallAll", "MasonLog" } },
+	}},-- lsp config
 	{ 'mfussenegger/nvim-dap', config = function () -- debugger
 			local dap = require("dap")
 
@@ -272,21 +257,6 @@ local plugin_setups = {
 					},
 				}
 			dap.configurations.c = dap.configurations.cpp
-			-- dap.configurations.rust = {
-			-- 	{
-			-- 		name = 'Launch',
-			-- 		type = 'lldb',
-			-- 		request = 'launch',
-			-- 		program = function()
-			-- 			return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/target/debug/', 'file')
-			-- 		end,
-			-- 		cwd = '${workFolder}',
-			-- 		stopOnEntry = true,
-			-- 		args = {},
-			-- 		runInTerminal = false
-			-- 	},
-			-- }
-
 			dap.configurations.rust = {
 				{
 					name = "Launch file",
@@ -426,7 +396,8 @@ local plugin_setups = {
 		keys = {
 			{ '<leader>la', "<cmd>Lspsaga code_action<CR>", mode = {'n', 'v'}, desc = "Code Action", unpack(opts) },
 			{'gh', "<cmd>Lspsaga lsp_finder<CR>", unpack(opts) },
-			{"gd", "<cmd>Lspsaga peek_definition<CR>", unpack(opts)},
+			{"gp", "<cmd>Lspsaga peek_definition<CR>", unpack(opts)},
+			{"gd", "<cmd>Lspsaga goto_definition<CR>", unpack(opts)},
 			{BINDINGS == "colemak" and "N" or "K", "<cmd>Lspsaga hover_doc<CR>"},
 			{"<leader>lr", "<cmd>Lspsaga rename<CR>", desc="Rename var", unpack(opts)},
 			{"<leader>lp", "<cmd>Lspsaga diagnostic_jump_prev<CR>", desc="previous diagnostic", unpack(opts)},
@@ -435,7 +406,6 @@ local plugin_setups = {
 			{"<leader>lo", "<cmd>Lspsaga outline<CR>", desc="Outline", unpack(opts)}
 		}
 	},
-	{ 'mfussenegger/nvim-jdtls', ft = {'java'} },
 	{ 'hrsh7th/cmp-nvim-lsp', lazy = true , event = "InsertEnter" },
 	{ 'hrsh7th/nvim-cmp', lazy = true, event = "InsertEnter",
 		dependencies = {
@@ -529,7 +499,7 @@ local plugin_setups = {
 				'confirm_done',
 				cmp_autopairs.on_confirm_done()
 			)
-		end
+		end,
 	},
 	-- { 'sirver/ultisnips',
 	--	requires = { {'nvim-lua/plenary.nvim'} }, --because of plenary path
@@ -553,9 +523,6 @@ local plugin_setups = {
 		config = function()
 			local ls = require("luasnip")
 
-
-
-			local util = require("luasnip.util.util")
 			local node_util = require("luasnip.nodes.util")
 
 			ls.setup({
@@ -647,7 +614,10 @@ local plugin_setups = {
 
 			require("luasnip.loaders.from_vscode").lazy_load()
 			require("luasnip.loaders.from_lua").load({paths = "~/.config/nvim/LuaSnip/"})
-		end
+		end,
+		keys = {
+			{'<leader>cs', function() require("luasnip.loaders").edit_snippet_files() end, desc = "snippets" }
+		}
 	},
 	{ 'mrcjkb/rustaceanvim', lazy = false, version = '^5'},
 	-- {
@@ -703,7 +673,20 @@ local plugin_setups = {
 	{ 'nvim-tree/nvim-tree.lua'
 		, dependencies = { 'nvim-tree/nvim-web-devicons' }
 		, config = function ()
-			require("nvim-tree").setup()
+			local function custom_on_attach(bufnr)
+				local api = require "nvim-tree.api"
+				local function opts(desc)
+					return { desc = "nvim-tree: " .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
+				end
+				api.config.mappings.default_on_attach(bufnr)
+  				vim.keymap.set("n", "r",              api.fs.rename_full,                 opts("Rename: Full Path"))
+				vim.keymap.del("n", "u", opts("Rename: Full Path"))
+				vim.keymap.del("n", "e", opts("Rename: Basename"))
+
+			end
+			require("nvim-tree").setup({
+				on_attach = custom_on_attach
+			})
 		end,
 		lazy = true,
 		cmd = {"NvimTreeOpen", "NvimTreeToggle"},
@@ -896,7 +879,7 @@ local plugin_setups = {
 	'kana/vim-metarw', -- fake paths 
 	{'majutsushi/tagbar', lazy = true, cmd = {'Tagbar', 'TagbarToggle'}, keys = {{"<leader>st", ":TagbarToggle<CR>", "Tagbar"}} },
 	{'mbbill/undotree', lazy = true, cmd = {'UndoTree', 'UndotreeToggle' }, keys = {{"<leader>su", ":UndotreeToggle<CR>", "Undotree"}} },
-	{'KabbAmine/vCoolor.vim', lazy = true, cmd = {'VCoolor'}, keys = {"<leader>fc", ":VCoolor<CR>", desc="Color picker"}},
+	{'KabbAmine/vCoolor.vim', lazy = true, cmd = {'VCoolor'}, keys = {"<leader>fc", "<cmd>VCoolor<CR>", desc="Color picker"}},
 	{'kabbamine/zeavim.vim', lazy = true, keys = { {"<leader>sz", "<Plug>Zeavim"}, '<Plug>Zeavim', '<Plug>ZVVisSelection', '<Plug>ZVOperator', '<Plug>ZVKeyDocset' }, cmd = { 'Zeavim', 'ZeavimV'}},
 	{'is0n/jaq-nvim', keys={{"<leader>sq", ":Jaq<CR>", desc="Quickrun"}}, opts = {
 		cmds = {
@@ -910,6 +893,7 @@ local plugin_setups = {
 		{'<leader>nw', '<esc><cmd>lua require("spectre").open_visual({select_word=true})<CR>', desc = "Search current word", mode="v"},
 		{'<leader>np', '<cmd>lua require("spectre").open_file_search({select_word=true})<CR>', desc = "Search on current file"},
 	} },
+	'NMAC427/guess-indent.nvim',
 
 
 
@@ -967,6 +951,7 @@ local plugin_setups = {
 	{ 'windwp/nvim-ts-autotag' },
 	-- }}} 
 	-- {{{ FILE TYPE SPECIFICS
+	{ 'mfussenegger/nvim-jdtls', ft = {'java'} },
 	{ 'cespare/vim-toml',           ft = {'toml'} },
 	{ 'elzr/vim-json',              ft = {'json'} },
 	{ 'vim-scripts/xml.vim',        ft = {'xml'}  },
@@ -1074,12 +1059,76 @@ local plugin_setups = {
 	{'conornewton/vim-pandoc-markdown-preview', ft =  {'markdown', 'markdown.pandoc'}, cmd = 'StartMdPreview'},
 	{'elkowar/yuck.vim', ft = {"yuck"}},
 	{'shiracamus/vim-syntax-x86-objdump-d'},
+
+	{
+		'rpapallas/illustrate.nvim',
+		dependencies = {
+			'nvim-lua/plenary.nvim',
+			'nvim-telescope/telescope.nvim',
+		},
+		keys = function()
+			local illustrate = require('illustrate')
+			local illustrate_finder = require('illustrate.finder')
+
+			return {
+				{
+					"<leader>is",
+					function() illustrate.create_and_open_svg() end,
+					desc = "Create and open a new SVG file with provided name."
+				},
+				{
+					"<leader>ia",
+					function() illustrate.create_and_open_ai() end,
+					desc = "Create and open a new Adobe Illustrator file with provided name."
+				},
+				{
+					"<leader>io",
+					function() illustrate.open_under_cursor() end,
+					desc = "Open file under cursor (or file within environment under cursor)."
+				},
+				{
+					"<leader>if",
+					function() illustrate_finder.search_and_open() end,
+					desc = "Use telescope to search and open illustrations in default app."
+				},
+				{
+					"<leader>ic",
+					function() illustrate_finder.search_create_copy_and_open() end,
+					desc = "Use telescope to search existing file, copy it with new name, and open it in default app."
+				},
+			}
+		end,
+		opts = {
+			-- optionally define options. Look at the "Default Config File Example"
+			-- under "Configuration" in the GitHub README.
+		},
+	},
 	-- }}}
 
 	{ 'Bekaboo/deadcolumn.nvim', config = function()
 		set.colorcolumn = "72"
 		require('deadcolumn').setup({warning = { hlgroup = {'Error', 'foreground'} } })
 	end },
+	{
+		'jbyuki/venn.nvim',
+		keys = {
+			{"<leader>fv", ":VBox<CR>", desc="ASCII Venn box", mode="v"}
+		}
+	},
+	{
+		"mistweaverco/kulala.nvim",
+		keys = {
+			{ "<leader>Rs", desc = "Send request" },
+			{ "<leader>Ra", desc = "Send all requests" },
+			{ "<leader>Rb", desc = "Open scratchpad" },
+		},
+		ft = {"http", "rest"},
+		opts = {
+			global_keymaps = true,
+			global_keymaps_prefix = "<leader>R",
+			kulala_keymaps_prefix = "",
+		},
+	},
 }
 
 -- {{{ Helper functions for organizing
@@ -1103,6 +1152,33 @@ function plugin_setups:concat(a)
 end
 -- }}}
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 -- FUN PLUGINS
 plugin_setups:concat {
 	-- {{{ pets 
@@ -1111,17 +1187,19 @@ plugin_setups:concat {
 	, config = function ()
 		require("pets").setup{}
 	end
-	, keys = {{'<leader>fp', '<cmd>PetsNew yeeeee<cr>', desc = 'new pet :D'},
-	}
+	, keys = 
+		{ {'<leader>fp', '<cmd>PetsNew yeeeee<cr>', desc = 'new pet :D'},
+		}
 	, lazy = true
 	, cmd = {'PetsNew', 'PetsNewCustom'}
 	},
 	-- }}}
 	-- {{{ LaTeX To unicode 
-	{'joom/latex-unicoder.vim'
-	, keys = {
-		{'<leader>fu', "<cmd>call unicoder#start(0)<CR>", desc = "convert LaTeX to unicode"}
-	} },
+	{ 'joom/latex-unicoder.vim'
+	, keys =
+		{ {'<leader>fu', "<cmd>call unicoder#start(0)<CR>", desc = "convert LaTeX to unicode"}
+		}
+	},
 	-- }}}
 	-- {{{ some UI 
 	{'skywind3000/vim-quickui', keys={{'<leader><leader>', ':call quickui#menu#open()<CR>'}, desc="Quickui"}, lazy = true},
@@ -1138,6 +1216,7 @@ plugin_setups:concat {
 		{ "nvim-lua/plenary.nvim"
 		, "nvim-treesitter/nvim-treesitter",
 		}
+	, lazy = true
 	, config = function() 
 		require("codecompanion").setup({
 		  adapters = {

@@ -6,7 +6,8 @@
         "opts",
         "pantran",
         "str",
-        "colemak_remap"
+        "colemak_remap",
+        "set"
     ],
     "Lua.workspace.checkThirdParty": false
 }

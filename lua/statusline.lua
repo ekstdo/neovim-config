@@ -164,8 +164,8 @@ local dark_font = '#1D2021'
 local bright_font = '#FFFFFF'
 function update_colors()
 	local highlights = {
-	  {'StatusLine', { fg = universal_bg, bg = bright_font, }},
-	  {'StatusLineNC', { fg = universal_bg_dark, bg = bright_font }},
+	  {'StatusLine', { fg = bright_font, bg = universal_bg_dark, }},
+	  {'StatusLineNC', { fg = bright_font, bg = universal_bg_dark }},
 	  {'Mode', { bg = Fg_col1, fg = dark_font, gui="bold" }},
 	  {'ModeAlt', { bg = Fg_col1, fg = Fg_col2 }},
 	  {'Git', { bg = Fg_col2, fg = bright_font }},

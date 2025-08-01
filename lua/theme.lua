@@ -1,18 +1,17 @@
 require "utils"
 
-run("set cursorline")
-run("set cursorcolumn")
+set.cursorline = true
+set.cursorcolumn = true
+set.number = true
 vim.cmd.colorscheme "leaf"
 g.gruvbox_italic = 1
-run("set number")
 -- run("hi Normal guibg=NONE ctermbg=NONE")
 set.conceallevel = 1
 set.colorcolumn = "72"
 g.tex_conceal='abdmg'
 
-run("set list")
--- set.listchars = "tab:▸ ,eol:¬,trail:~,extends:>,precedes:<,space:␣"
-set.listchars = "tab:▸ ,eol:¬,trail:~,extends:>,precedes:<"
+set.list = true
+vim.opt.listchars = { tab = "▸ ", eol = "¬", trail = "~", extends =">", precedes = "<"}
 set.tabstop = 4
 set.shiftwidth = 4
 

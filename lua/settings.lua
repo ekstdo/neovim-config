@@ -2,8 +2,23 @@ require "utils"
 
 BINDINGS = "colemak" -- can be qwerty or colemak
 
+
+
+g.mapleader = ' ' -- sets the leader key
+g.maplocalleader = ','
+
+set.showmode = false -- it's in the statusbar anyways
+
 set.mouse = "a"
-set.clipboard = "unnamedplus"
+vim.schedule(function() -- 
+	set.clipboard = "unnamedplus"
+end)
+
+set.breakindent = true -- continuing a wrapped line will indent it
+set.undofile = true -- save undohistory?
+
+-- set.ignorecase = true
+-- set.smartcase = true
 
 run("set foldmethod=indent")
 set.foldlevelstart=99
@@ -13,13 +28,11 @@ set.wrap=false
 
 set.colorcolumn = "72"
 
-g.mapleader = ' '
-g.maplocalleader = ','
+
 
 set.timeoutlen = 300
 set.hidden = true
 set.cmdheight = 2
-set.showmode = false
 set.shortmess = set.shortmess .. 'c'
 
 set.termguicolors = true
@@ -81,7 +94,7 @@ g.gruvbox_contrast_dark = "hard"
 --   {
 --       pattern = '*.typ',
 --       callback = function()
---           vim.opt_local.ft = "typst"
+--           setpt_local.ft = "typst"
 --       end,
 --       group = numbertogglegroup
 --   })
