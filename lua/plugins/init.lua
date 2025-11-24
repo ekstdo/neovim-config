@@ -94,8 +94,7 @@ local plugin_setups = {
 			local lsp_flags = {}
 			local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
-			local lspconfig = require('lspconfig')
-			lspconfig.ruff.setup({
+			vim.lsp.config("ruff", {
 				init_options = {
 					settings = {
 						lineLength = 100,
@@ -120,13 +119,15 @@ local plugin_setups = {
 				desc = 'LSP: Disable hover capability from Ruff',
 			})
 
-			lspconfig.basedpyright.setup {
+			vim.lsp.config("basedpyright",  {
 				settings = {
 					basedpyright = {
 						-- Using Ruff's import organizer
 						disableOrganizeImports = true,
 						analysis = {
-							typeCheckingMode = "basic"
+							typeCheckingMode = "basic",
+							reportMissingTypeArgument = false,
+							reportAny = false,
 						}
 					},
 					python = {
@@ -137,36 +138,52 @@ local plugin_setups = {
 					},
 				},
 				on_attach = on_attach
-			}
+			})
 
-			lspconfig.ts_ls.setup{  on_attach = on_attach, flags = lsp_flags   }
-			lspconfig.elixirls.setup{  cmd = { "elixir-ls" }, on_attach = on_attach   }
-			lspconfig.clangd.setup{    flags = lsp_flags, on_attach = on_attach   }
-			lspconfig.slint_lsp.setup{    flags = lsp_flags, on_attach = on_attach   }
-			lspconfig.wgsl_analyzer.setup{    flags = lsp_flags, on_attach = on_attach   }
-			lspconfig.texlab.setup{
+			vim.lsp.config("ts_ls", {  on_attach = on_attach, flags = lsp_flags   })
+			vim.lsp.config("elixirls", {  cmd = { "elixir-ls" }, on_attach = on_attach   })
+			vim.lsp.config("clangd", {    flags = lsp_flags, on_attach = on_attach   })
+			vim.lsp.config("slint_lsp", {    flags = lsp_flags, on_attach = on_attach   })
+			vim.lsp.config("wgsl_analyzer", {    flags = lsp_flags, on_attach = on_attach   })
+			vim.lsp.config("texlab", {
 				flags = lsp_flags,
 				on_attach = on_attach,
 				filetypes = { "tex", "plaintex", "bib", "markdown" }
-			}
-			lspconfig.html.setup{}
-			lspconfig.cssls.setup{}
-			lspconfig.golangci_lint_ls.setup{ on_attach = on_attach }
-			lspconfig.hls.setup{ flags = lsp_flags, on_attach = on_attach }
-			lspconfig.asm_lsp.setup{ flags = lsp_flags, on_attach = on_attach }
-			lspconfig.svelte.setup{ on_attach = on_attach }
-			lspconfig.tinymist.setup{
-				root_dir = function()
-					return vim.fn.getcwd()
-				end,
+			})
+			vim.lsp.config("html", {})
+			vim.lsp.config("cssls", {})
+			vim.lsp.config("golangci_lint_ls", { on_attach = on_attach })
+			vim.lsp.config("hls", { flags = lsp_flags, on_attach = on_attach })
+			vim.lsp.config("asm_lsp", { flags = lsp_flags, on_attach = on_attach })
+			vim.lsp.config("svelte", { on_attach = on_attach })
+
+			vim.lsp.config("tinymist", {
+
 				on_init = function(client)
 					client.offset_encoding = "utf-8"
 				end,
-				on_attach = on_attach
-			}
-			lspconfig.csharp_ls.setup{on_attach = on_attach}
-			lspconfig.vala_ls.setup{on_attach = on_attach}
-			lspconfig.lua_ls.setup {
+				on_attach = function(client, bufnr)
+					vim.keymap.set("n", "<leader>ltp", function()
+						client:exec_cmd({
+							title = "pin",
+							command = "tinymist.pinMain",
+							arguments = { vim.api.nvim_buf_get_name(0) },
+						}, { bufnr = bufnr })
+					end, { desc = "[T]inymist [P]in", noremap = true })
+
+					vim.keymap.set("n", "<leader>ltu", function()
+						client:exec_cmd({
+							title = "unpin",
+							command = "tinymist.pinMain",
+							arguments = { vim.v.null },
+						}, { bufnr = bufnr })
+					end, { desc = "[T]inymist [U]npin", noremap = true })
+				end,
+			})
+
+			vim.lsp.config("csharp_ls", {on_attach = on_attach})
+			vim.lsp.config("vala_ls", {on_attach = on_attach})
+			vim.lsp.config("lua_ls",  {
 				settings = {
 					Lua = {
 						runtime = {
@@ -188,26 +205,30 @@ local plugin_setups = {
 					},
 				},
 				on_attach = on_attach
-			}
+			})
 			capabilities.textDocument.completion.completionItem.snippetSupport = true
 
-			lspconfig.emmet_language_server.setup{
+			vim.lsp.config("emmet_language_server", {
 				capabilities = capabilities,
 				filetypes = { "css", "eruby", "html", "javascript", "javascriptreact", "less", "sass", "scss", "pug", "typescriptreact", "svelte" },
-			}
+			})
+
+			vim.lsp.enable({
+				'ruff', 'basedpyright', 'ts_ls', 'elixirls', 'clangd', 'slint_lsp', 'wgsl_analyzer', 'texlab', 'html', 'cssls',
+				'golangci_lint_ls', 'hls', 'asm_lsp', 'svelte', 'tinymist', 'csharp_ls', 'vala_ls', 'lua_ls', 'emmet_language_server'
+			})
 
 
-
-			vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
-				vim.lsp.diagnostic.on_publish_diagnostics,
-				{
-					virtual_text = false,
-					signs = true,
-					update_in_insert = false,
-					underline = true,
-					severity_sort = true,
-				}
-			) -- removes virtual text 
+			-- vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
+			-- 	vim.lsp.diagnostic.on_publish_diagnostics,
+			-- 	{
+			-- 		virtual_text = false,
+			-- 		signs = true,
+			-- 		update_in_insert = false,
+			-- 		underline = true,
+			-- 		severity_sort = true,
+			-- 	}
+			-- ) -- removes virtual text 
 			local signs = { Error = "󰅚 ", Warn = "󰀪 ", Hint = "󰌶 ", Info = " " }
 			for type, icon in pairs(signs) do
 				local hl = "DiagnosticSign" .. type
@@ -215,7 +236,7 @@ local plugin_setups = {
 			end
 		end
 	, dependencies = {
-		{'williamboman/mason-lspconfig.nvim', setup=true, dependencies= { 'williamboman/mason.nvim'} },
+		{'williamboman/mason-lspconfig', dependencies= { 'williamboman/mason.nvim'} },
 		{ 'j-hui/fidget.nvim', opts = {} },
 		{'williamboman/mason.nvim', opts = { -- lsp installer
 			ensure_installed = {
@@ -658,7 +679,12 @@ local plugin_setups = {
 		keys = {{"<leader>tg", "<cmd>GrammarousCheck<CR>", desc = "Grammar checker", unpack(opts)}}, cmd = {'GrammarousCheck'} },
 	{ 'folke/todo-comments.nvim', setup = true },
 	{ 'norcalli/nvim-colorizer.lua', setup = true },
-	'tpope/vim-commentary',
+	{
+		'numToStr/Comment.nvim',
+		opts = {
+			-- add any options here
+		}
+	},
 	{ 'chrisbra/NrrwRgn', cmd = {'NR', 'NW', 'NRP', 'NRM'} },
 	'lambdalisue/suda.vim',
 	-- }}}
@@ -975,10 +1001,16 @@ local plugin_setups = {
 	{ 'kmonad/kmonad-vim',          ft = {'kbd'} }, -- kmonad config
 	{'slint-ui/vim-slint', ft={'slint'}},
 	{ 'kaarmu/typst.vim', ft = 'typst', lazy = false},
-	-- {
-	-- 	"OXY2DEV/markview.nvim",
-	-- 	lazy = false
-	-- },
+	{
+		"OXY2DEV/markview.nvim",
+		lazy = false,
+		typst = {
+			enable = false
+		},
+		markdown = {
+			enable = true
+		}
+	},
 	{
 		'chomosuke/typst-preview.nvim',
 		ft = 'typst',

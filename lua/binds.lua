@@ -1,10 +1,5 @@
 require "utils"
-
-
-
-
-
-BINDINGS = "colemak"
+require "settings"
 
 -- some of the keymap settings are inspired by and/or copied from LazyVim
 

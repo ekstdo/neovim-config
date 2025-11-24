@@ -1635,7 +1635,7 @@ inoreabbrev <expr> __
 
 exec "source " . fnamemodify(expand("$MYVIMRC"), ":h") . "/markdown/corrections.vim"
 
-set ft=markdown.pandoc
+" set ft=markdown.pandoc
 let g:table_mode_corner='+'
 let b:table_mode_corner='+'
 

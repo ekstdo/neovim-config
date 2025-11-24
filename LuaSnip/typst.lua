@@ -142,17 +142,26 @@ return {
   ),
 
   s(
+    { trig = "([%a]+[%d_]?%d?)vec", snippetType="autosnippet", wordTrig=false, regTrig=true },
+    fmta("arrow(<>)", {f( function(_, snip) return snip.captures[1] end )}),
+    { condition = is_math_mode, show_condition = is_math_mode }
+  ),
+
+  s(
     { trig = "([%a]+[%d_]?%d?)til", snippetType="autosnippet", wordTrig=false, regTrig=true },
     fmta("tilde(<>)", {f( function(_, snip) return snip.captures[1] end )}),
     { condition = is_math_mode, show_condition = is_math_mode }
   ),
 
-
-
-
   s(
     { trig = "([%a]+[%d_]?%d?)hat", snippetType="autosnippet", wordTrig=false, regTrig=true },
     fmta("hat(<>)", {f( function(_, snip) return snip.captures[1] end )}),
+    { condition = is_math_mode, show_condition = is_math_mode }
+  ),
+
+  s(
+    { trig = "([%a]+[%d_]?%d?)cal", snippetType="autosnippet", wordTrig=false, regTrig=true },
+    fmta("cal(<>)", {f( function(_, snip) return snip.captures[1] end )}),
     { condition = is_math_mode, show_condition = is_math_mode }
   ),
 
@@ -219,9 +228,14 @@ return {
   ),
 
   s(
-	  { trig = "plot-function"},
+    {trig = "qspace"},
+    fmta("#sym.space.quad", {})
+  ),
 
-	  fmta([[cetz.canvas({
+  s(
+    { trig = "plot-function"},
+
+    fmta([[cetz.canvas({
   import cetz.draw: *
   import cetz-plot: *
 
@@ -229,7 +243,7 @@ return {
     plot.add(domain: (<>, <>), samples: 100, x =>> <>)
   })
 }
-	  ]], { i(1, "-5"), i(2, "5"), i(3, "calc.sin(x)") })
+    ]], { i(1, "-5"), i(2, "5"), i(3, "calc.sin(x)") })
   )
 
 }
