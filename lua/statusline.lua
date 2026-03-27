@@ -165,6 +165,8 @@ local bright_font = '#FFFFFF'
 function update_colors()
 	local highlights = {
 	  {'StatusLine', { fg = bright_font, bg = universal_bg_dark, }},
+	  {'Anti', { fg = universal_bg, bg = bright_font, }},
+	  {'AntiDark', { fg = "#ffffff", bg = "#2E2C2F", }},
 	  {'StatusLineNC', { fg = bright_font, bg = universal_bg_dark }},
 	  {'Mode', { bg = Fg_col1, fg = dark_font, gui="bold" }},
 	  {'ModeAlt', { bg = Fg_col1, fg = Fg_col2 }},

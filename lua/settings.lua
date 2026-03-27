@@ -98,3 +98,7 @@ g.gruvbox_contrast_dark = "hard"
 --       end,
 --       group = numbertogglegroup
 --   })
+--
+vim.o.fillchars = "foldopen:𜸈,foldclose:"
+vim.o.statuscolumn = "%!v:lua.require('statuscolumn').myStatuscolumn()";
+-- vim.o.statuscolumn = "%@SignCb@%s%=%T%@NumCb@%l│%T"

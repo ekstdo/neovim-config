@@ -238,3 +238,74 @@ v:p:let @"=@0<CR>]]
 colonIter(function (from, to) vim.api.nvim_set_keymap('i', from, to, { noremap = true }) end, iStr)
 colonIter(function (from, to) vim.api.nvim_set_keymap('v', from, to, { noremap = true }) end, vStr)
 
+
+
+
+arrmap = {h = "◄", j = "🭭", k = "🭯", l = "►"}
+function extendArrow(direction) 
+	local unmapped_direction = direction
+	if BINDINGS == "colemak" then
+		unmapped_direction = ({["u"]= "k", ["n"]= "h", ["e"]= "j", ["i"]= "l"})[direction]
+	end
+	local curchar = vim.fn.getregion(vim.fn.getpos('.'), vim.fn.getpos('.'))[1]
+	print(curchar)
+	local c = extendArrowChar(curchar, unmapped_direction)
+	if c == "" then
+		vim.api.nvim_input("r"..arrmap[unmapped_direction])
+	else
+		vim.api.nvim_input("r"..c.. direction.."r".. arrmap[unmapped_direction])
+	end
+end
+
+function extendArrowChar(char, direction)
+	if char == "◄" then
+		if direction == "h" then
+			return "─"
+		elseif direction == "j" then
+			return "┌"
+		elseif direction == "k" then
+			return "└"
+		elseif direction == "l" then
+			return " "
+		end
+	elseif char == "►" then
+		if direction == "h" then
+			return " "
+		elseif direction == "j" then
+			return "┐"
+		elseif direction == "k" then
+			return "┘"
+		elseif direction == "l" then
+			return "─"
+		end
+	elseif char == "🭯" then
+		if direction == "h" then
+			return "┐"
+		elseif direction == "j" then
+			return " "
+		elseif direction == "k" then
+			return "│"
+		elseif direction == "l" then
+			return "┌"
+		end
+	elseif char == "🭭" then
+		if direction == "h" then
+			return "┘"
+		elseif direction == "j" then
+			return "│"
+		elseif direction == "k" then
+			return " "
+		elseif direction == "l" then
+			return "└"
+		end
+	end
+	return ""
+end
+
+vim.keymap.set("n", "<leader>fxn", function() extendArrow("n") end, {})
+vim.keymap.set("n", "<leader>fxu", function() extendArrow("u") end, {})
+vim.keymap.set("n", "<leader>fxe", function() extendArrow("e") end, {})
+vim.keymap.set("n", "<leader>fxi", function() extendArrow("i") end, {})
+
+
+

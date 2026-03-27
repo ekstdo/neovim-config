@@ -1,7 +1,6 @@
 require "utils"
 
-set.cursorline = true
-set.cursorcolumn = true
+
 set.number = true
 vim.cmd.colorscheme "leaf"
 g.gruvbox_italic = 1
@@ -20,3 +19,7 @@ run("hi WinSeparator guifg=#353535 guibg=#1D2021")
 run("hi! link SignColumn LineNr")
 run("hi! link FoldColumn LineNr")
 run("hi NvimTreeWinSeparator guibg=#353535 guifg=#1D2021")
+
+set.cursorline = true
+-- vim.api.nvim_set_hl(0, "CursorLine", {bg = "#000000"})
+-- run("hi CursorLine guibg=#000000")

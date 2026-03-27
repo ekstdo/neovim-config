@@ -44,6 +44,7 @@ local plugin_setups = {
 			{ "<leader>sg", "<cmd>LazyGit<cr>", desc = "LazyGit" }
 		}
 	},
+	'lewis6991/gitsigns.nvim',
 	--  }}}
 
 
@@ -153,7 +154,6 @@ local plugin_setups = {
 			vim.lsp.config("html", {})
 			vim.lsp.config("cssls", {})
 			vim.lsp.config("golangci_lint_ls", { on_attach = on_attach })
-			vim.lsp.config("hls", { flags = lsp_flags, on_attach = on_attach })
 			vim.lsp.config("asm_lsp", { flags = lsp_flags, on_attach = on_attach })
 			vim.lsp.config("svelte", { on_attach = on_attach })
 
@@ -179,6 +179,9 @@ local plugin_setups = {
 						}, { bufnr = bufnr })
 					end, { desc = "[T]inymist [U]npin", noremap = true })
 				end,
+				settings = {
+					["syntaxOnly"] = "enable"
+				}
 			})
 
 			vim.lsp.config("csharp_ls", {on_attach = on_attach})
@@ -210,12 +213,13 @@ local plugin_setups = {
 
 			vim.lsp.config("emmet_language_server", {
 				capabilities = capabilities,
-				filetypes = { "css", "eruby", "html", "javascript", "javascriptreact", "less", "sass", "scss", "pug", "typescriptreact", "svelte" },
+				filetypes = { "css", "eruby", "html", "javascriptreact", "less", "sass", "scss", "pug", "typescriptreact", "svelte" },
 			})
 
 			vim.lsp.enable({
-				'ruff', 'basedpyright', 'ts_ls', 'elixirls', 'clangd', 'slint_lsp', 'wgsl_analyzer', 'texlab', 'html', 'cssls',
-				'golangci_lint_ls', 'hls', 'asm_lsp', 'svelte', 'tinymist', 'csharp_ls', 'vala_ls', 'lua_ls', 'emmet_language_server'
+				'ruff', 'ts_ls', 'elixirls', 'clangd', 'slint_lsp', 'wgsl_analyzer', 'texlab', 'html', 'cssls',
+				'golangci_lint_ls', 'asm_lsp', 'svelte', 'tinymist', 'csharp_ls', 'vala_ls', 'lua_ls', 'emmet_language_server',
+				'basedpyright'
 			})
 
 
@@ -240,7 +244,7 @@ local plugin_setups = {
 		{ 'j-hui/fidget.nvim', opts = {} },
 		{'williamboman/mason.nvim', opts = { -- lsp installer
 			ensure_installed = {
-				'debugpy', 'ruff', 'basedpyright'
+				'debugpy', 'ruff'
 			}
 		}, cmd = { "Mason", "MasonUpdate", "MasonInstall", "MasonUninstall", "MasonUninstallAll", "MasonLog" } },
 	}},-- lsp config
@@ -316,11 +320,11 @@ local plugin_setups = {
 			}
 		end,
 		keys = {
-			{ "<leader>db", function() require"dap".toggle_breakpoint() end, unpack(opts) },
+			{ "<leader>db", function() require"dap".toggle_breakpoint() end, desc = "breakpoint" , unpack(opts) },
 			{ "<leader>dB", function() require"dap".set_breakpoint(vim.fn.input('Breakpoint condition: ')) end, unpack(opts) },
-			{ "<leader>dc", function() require"dap".continue() end, unpack(opts) },
-			{ "<leader>ds", function() require"dap".step_over() end, unpack(opts) },
-			{ "<leader>di", function() require"dap".step_into() end, unpack(opts) },
+			{ "<leader>dc", function() require"dap".continue() end, desc = "continue", unpack(opts) },
+			{ "<leader>ds", function() require"dap".step_over() end, desc = "step over", unpack(opts) },
+			{ "<leader>di", function() require"dap".step_into() end, desc = "step into", unpack(opts) },
 			{ "<leader>dr", function() require"dap".repl.open() end, unpack(opts) },
 		},
 		lazy = true
@@ -340,7 +344,7 @@ local plugin_setups = {
 			"nvim-neotest/neotest-python"
 		},
 		lazy = true,
-		config = function() 
+		config = function()
 			require("neotest").setup({
 				adapters = {
 					require("neotest-python")({
@@ -424,15 +428,22 @@ local plugin_setups = {
 			{"<leader>lp", "<cmd>Lspsaga diagnostic_jump_prev<CR>", desc="previous diagnostic", unpack(opts)},
 			{"<leader>ln", "<cmd>Lspsaga diagnostic_jump_next<CR>", desc="next diagnostic", unpack(opts)},
 			{"<leader>lb", "<cmd>Lspsaga show_buf_diagnostics<CR>", desc="buffer diagnostics", unpack(opts)},
-			{"<leader>lo", "<cmd>Lspsaga outline<CR>", desc="Outline", unpack(opts)}
+			{"<leader>lo", "<cmd>Lspsaga outline<CR>", desc="Outline", unpack(opts)},
+			{"<leader>lci", "<cmd>Lspsaga incoming_calls<CR>", desc="Incoming calls", unpack(opts)},
+			{"<leader>lco", "<cmd>Lspsaga outgoing_calls<CR>", desc="Outgoing calls", unpack(opts)},
 		}
 	},
-	{ 'hrsh7th/cmp-nvim-lsp', lazy = true , event = "InsertEnter" },
 	{ 'hrsh7th/nvim-cmp', lazy = true, event = "InsertEnter",
 		dependencies = {
-			'hrsh7th/cmp-buffer', 'hrsh7th/cmp-path', 'hrsh7th/cmp-cmdline', 'f3fora/cmp-spell',
+			'hrsh7th/cmp-buffer',
+			'hrsh7th/cmp-path',
+			'hrsh7th/cmp-cmdline',
+			'f3fora/cmp-spell',
 			-- 'quangnguyen30192/cmp-nvim-ultisnips',
-			'hrsh7th/cmp-nvim-lsp-signature-help', 'onsails/lspkind.nvim', 'saadparwaiz1/cmp_luasnip',
+			'hrsh7th/cmp-nvim-lsp-signature-help',
+			'onsails/lspkind.nvim',
+			'saadparwaiz1/cmp_luasnip',
+			'hrsh7th/cmp-nvim-lsp'
 			-- {'tzachar/cmp-tabnine', build='./install.sh', lazy = true, event = "InsertEnter"},
 		},
 		config = function()
@@ -471,7 +482,6 @@ local plugin_setups = {
 							fallback()
 						end
 					end),
-
 					["<Tab>"] = cmp.mapping(function(fallback)
 						if cmp.visible() then
 							cmp.select_next_item()
@@ -481,7 +491,6 @@ local plugin_setups = {
 							fallback()
 						end
 					end, { "i", "s" }),
-
 					["<S-Tab>"] = cmp.mapping(function(fallback)
 						if cmp.visible() then
 							cmp.select_prev_item()
@@ -522,25 +531,13 @@ local plugin_setups = {
 			)
 		end,
 	},
-	-- { 'sirver/ultisnips',
-	--	requires = { {'nvim-lua/plenary.nvim'} }, --because of plenary path
-	--	dependencies = {'honza/vim-snippets'},
-	--	keys = {"<leader>cs", ":UltiSnipsEdit<CR>", desc="snippets", unpack(opts)},
-	--	lazy = false,
-	--	config = function()
-	--		g.UltiSnipsExpandTrigger = '<tab>'
-	--		g.UltiSnipsJumpForwardTrigger = '<tab>'
-	--		g.UltiSnipsJumpBackwardTrigger = '<s-tab>'
-	--		g.UltiSnipsSnippetDirectories={ g.CURRENT_CONFIG_FOLDER .. 'ultisnippets' }
-	--	end
-	-- },
 	{
 		"L3MON4D3/LuaSnip",
 		-- follow latest release.
 		version = "v2.*", -- Replace <CurrentMajor> by the latest released major (first number of latest release)
 		-- install jsregexp (optional!).
 		dependencies = { "rafamadriz/friendly-snippets" },
-		build = "make install_jsregexp",
+		run = "make install_jsregexp",
 		config = function()
 			local ls = require("luasnip")
 
@@ -640,7 +637,7 @@ local plugin_setups = {
 			{'<leader>cs', function() require("luasnip.loaders").edit_snippet_files() end, desc = "snippets" }
 		}
 	},
-	{ 'mrcjkb/rustaceanvim', lazy = false, version = '^5'},
+	{ 'mrcjkb/rustaceanvim', lazy = false, version = '^6'},
 	-- {
 	-- 	"Exafunction/codeium.nvim",
 	-- 	dependencies = {
@@ -732,7 +729,21 @@ local plugin_setups = {
 		end
 	}, -- bufferline
 	-- }}}
-
+	-- {
+	-- 	"nvimtools/hydra.nvim",
+	-- 	config = function()
+	-- 	local Hydra = require("hydra")
+	-- 	Hydra({
+	-- 		name = "Drawing path",
+	-- 		mode = "n",
+	-- 		body = "<leader>fx",
+	-- 		heads = {
+	--
+	-- 		}
+	-- 	})
+	-- 		-- create hydras in here
+	-- 	end
+	-- },
 
 	{ 'folke/which-key.nvim'
 		, opts = { triggers = { "<leader>" }, triggers_blacklist = { i = {"<leader>"} }, notify = false, defer = function(ctx)
@@ -750,6 +761,7 @@ local plugin_setups = {
 				{ "<leader>-", desc = "decrease" },
 				{ "<leader>m", group = "test" },
 				{ "<leader>T", group = "table" },
+				{ "<leader>R", group = "requests (kulala)" },
 				{ "<leader>TT", desc = "tableize delim" },
 				{ "<leader>Ta", group = "append" },
 				{ "<leader>Tac", desc = "append column" },
@@ -767,13 +779,10 @@ local plugin_setups = {
 				{ "<leader>c", group = "config" },
 				{ "<leader>cm", desc = "main config" },
 				{ "<leader>d", group = "debugger" },
-				{ "<leader>db", desc = "breakpoint" },
-				{ "<leader>dc", desc = "continue" },
-				{ "<leader>di", desc = "step into" },
-				{ "<leader>ds", desc = "step over" },
 				{ "<leader>f", group = "funky" },
 				{ "<leader>fc", desc = "color chooser" },
 				{ "<leader>j", group = "jump" },
+				{ "<leader>i", group = "illustrate/inspect" },
 				{ "<leader>jD", desc = "declaration" },
 				{ "<leader>jd", desc = "definition" },
 				{ "<leader>ji", desc = "implementation" },
@@ -787,21 +796,17 @@ local plugin_setups = {
 				{ "<leader>ns", desc = "string" },
 				{ "<leader>nt", desc = "tabs" },
 				{ "<leader>s", group = "show" },
-				{ "<leader>sc", desc = "copy window" },
 				{ "<leader>sd", desc = "drawing" },
 				{ "<leader>se", desc = "ez swap window" },
 				{ "<leader>sf", desc = "file tree" },
 				{ "<leader>sp", desc = "tree sitter" },
 				{ "<leader>ss", desc = "shell" },
-				{ "<leader>sv", desc = "paste/swap window" },
 				{ "<leader>sx", desc = "debugger ui" },
 				{ "<leader>t", group = "text" },
 				{ "<leader>tc", desc = "duplicate line" },
 				{ "<leader>td", group = "delete" },
 				{ "<leader>tde", desc = "empty lines" },
 				{ "<leader>te", desc = "emojify" },
-				{ "<leader>tg", desc = "grammar check" },
-				{ "<leader>tr", desc = "motion translate" },
 				{ "<leader>tt", group = "tabs" },
 				{ "<leader>tts", desc = "to " },
 				{ "<leader>tw", desc = "word wrap" },
@@ -814,26 +819,70 @@ local plugin_setups = {
 				{ "<leader>w|", desc = "vertsplit" },
 				{ "<leader>p", group = "preview" },
 			})
+			vim.keymap.set("n", "<c-w><space>", function()
+				require("which-key").show({
+					keys = "<c-w>",
+					loop = true, -- this will keep the popup open until you hit <esc>
+				})
+			end)
+			vim.keymap.set("n", "<leader>fx<space>", function()
+				require("which-key").show({
+					keys = "<leader>fx",
+					loop = true,
+				})
+			end)
 		end
 	},
+	{ 'nvim-telescope/telescope-fzf-native.nvim', build = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release --target install' },
+	'nvim-telescope/telescope-bibtex.nvim',
+	'alduraibi/telescope-glyph.nvim',
+	'nullromo/telescope-box-drawing.nvim',
 	{
 		'nvim-telescope/telescope.nvim',
 		requires = {
 			'nvim-lua/plenary.nvim',
-			'nvim-telescope/telescope-bibtex.nvim'
+			'nvim-telescope/telescope-bibtex.nvim',
+			'alduraibi/telescope-glyph.nvim',
 		},
-		opts = {},
 		config = function()
+			local telescope = require('telescope')
+
+			telescope.setup {
+				extensions = {
+					fzf = {
+						fuzzy = true,                    -- false will only do exact matching
+						override_generic_sorter = true,  -- override the generic sorter
+						override_file_sorter = true,     -- override the file sorter
+						case_mode = "smart_case",        -- or "ignore_case" or "respect_case"
+														 -- the default case_mode is "smart_case"
+					},
+					glyph = {
+						action = function(glyph)
+							-- argument glyph is a table.
+							-- {name="", value="", category="", description=""}
+
+							-- vim.fn.setreg("*", glyph.value)
+							-- print([[Press p or "*p to paste this glyph]] .. glyph.value)
+
+							-- insert glyph when picked
+							print(glyph.value .. " selected")
+							vim.api.nvim_put({ glyph.value }, 'c', false, true)
+						end,
+					},
+				},
+			}
+
 		end,
 		lazy = true, cmd = "Telescope",
 		keys = { {"<leader>nf", ":Telescope find_files<CR>", desc="files", unpack(opts)},
 				{"<leader>nb", ":Telescope buffers<CR>", desc="buffers", unpack(opts)},
 				{"<leader>ns", ":Telescope live_grep<CR>", desc="strings", unpack(opts)},
-				{"<leader>nh", ":Telescope help_tags<CR>", desc="help tags", unpack(opts)}
+				{"<leader>nh", ":Telescope help_tags<CR>", desc="help tags", unpack(opts)},
+				{"<leader>ng", ":Telescope glyph<CR>", desc="unicode", unpack(opts)}
 			}
 	},
-	{ 't9md/vim-choosewin'
-		, config = function()
+	{ 't9md/vim-choosewin',
+		config = function()
 			g.choosewin_overlay_enable = 1
 		end,
 		keys = {{"+", "<Plug>(choosewin)"}}
@@ -841,20 +890,29 @@ local plugin_setups = {
 	{ 'wesQ3/vim-windowswap'
 		, config = function()
 			g.windowswap_map_keys = 0
-			keymap("n", BINDINGS == "colemak" and "<leader>sc" or "<leader>sy", ":call WindowSwap#MarkWindowSwap()<CR>", opts)
-			keymap("n", BINDINGS == "colemak" and "<leader>sv" or "<leader>sp", ":call WindowSwap#DoWindowSwap()<CR>", opts)
-			keymap("n", "<leader>se", ":call WindowSwap#EasyWindowSwap()<CR>", opts)
+		end,
+		keys = {
+			{BINDINGS == "colemak" and "<leader>sc" or "<leader>sy", ":call WindowSwap#MarkWindowSwap()<CR>", desc="Mark windowswap", unpack(opts)},
+			{BINDINGS == "colemak" and "<leader>sv" or "<leader>sp", ":call WindowSwap#DoWindowSwap()<CR>", desc="Window swap with", unpack(opts)},
+			{"<leader>se", ":call WindowSwap#EasyWindowSwap()<CR>", desc="Mark windowswap", unpack(opts)},
+		}
+	},
+	{
+		'rhysd/clever-f.vim',
+		init = function() 
+			vim.g.clever_f_not_overwrites_standard_mappings = 1
 		end
 	},
 	{
 		'jinh0/eyeliner.nvim',
 		config = function()
-			require'eyeliner'.setup {
+			local eyeliner = require'eyeliner'
+			eyeliner.setup {
 				-- show highlights only after keypress
 				highlight_on_key = true,
 
 				-- dim all other characters if set to true (recommended!)
-				dim = true,	
+				dim = true,
 
 				-- set the maximum number of characters eyeliner.nvim will check from
 				-- your current cursor position; this is useful if you are dealing with
@@ -872,29 +930,48 @@ local plugin_setups = {
 
 				-- add eyeliner to f/F/t/T keymaps;
 				-- see section on advanced configuration for more information
-				default_keymaps = BINDINGS ~= "colemak",
+				default_keymaps = false,
 			}
-		
-		if BINDINGS == "colemak" then
+			vim.api.nvim_set_hl(0, 'EyelinerPrimary', { fg='#C48332', bold = true, underline = true })
+			vim.api.nvim_set_hl(0, 'EyelinerSecondary', { fg='#D1C9A2' })
+
+			local expr_opts = {expr = true, remap = false};
 			vim.keymap.set(
 				{"n", "x", "o"},
 				"f",
-				function() 
-					require("eyeliner").highlight({ forward = true })
-					return "f"
+				function()
+					eyeliner.highlight({ forward = true })
+					return "<Plug>(clever-f-f)"
 				end,
-				{expr = true, remap = false}
+				expr_opts
 			)
 			vim.keymap.set(
 				{"n", "x", "o"},
-				"w",
-				function() 
-					require("eyeliner").highlight({ forward = true })
-					return "t"
+				BINDINGS == "colemak" and "w" or "t",
+				function()
+					eyeliner.highlight({ forward = true })
+					return "<Plug>(clever-f-t)"
 				end,
-				{expr = true, remap = false}
+				expr_opts
 			)
-		end
+			vim.keymap.set(
+				{"n", "x", "o"},
+				BINDINGS == "colemak" and "W" or "T",
+				function()
+					eyeliner.highlight({ backward = true })
+					return "<Plug>(clever-f-T)"
+				end,
+				expr_opts
+			)
+			vim.keymap.set(
+				{"n", "x", "o"},
+				"F",
+				function()
+					eyeliner.highlight({ backward = true })
+					return "<Plug>(clever-f-F)"
+				end,
+				expr_opts
+			)
 		end
 	},
 	{
@@ -921,21 +998,11 @@ local plugin_setups = {
 	} },
 	'NMAC427/guess-indent.nvim',
 
-
-
-
-
-
-
-
-
-
-
 	-- {{{ TREESITTER PLUGINS
 	{
 		'nvim-treesitter/nvim-treesitter',
-		run = ':TSUpdate',
-		event = "BufEnter",
+		build = ':TSUpdate',
+		lazy = false,
 		config = function()
 			require 'nvim-treesitter.configs'.setup {
 				ensure_installed = { "c", "lua", "vim", "vimdoc", "query",  "css", "html", "haskell", "c_sharp", "markdown", "markdown_inline", "vala", "blueprint" },
@@ -955,6 +1022,16 @@ local plugin_setups = {
 						['i;'] = 'textsubjects-container-inner',
 					},
 				},
+
+				incremental_selection = {
+					enable = true,
+					keymaps = {
+						init_selection = "<leader>aa", -- false to disable
+						node_incremental = "<leader>aa",
+						scope_incremental = "<leader>as",
+						node_decremental = "<leader>ad",
+					}
+				},
 				highlight = {
 					enable = true,
 				}
@@ -964,16 +1041,13 @@ local plugin_setups = {
 			vim.api.nvim_set_hl(0, "@line_comment", { link = "comment" })
 
 		end,
+		keys = {
+			{"<leader>it", ":InspectTree<CR>", desc="inspect tree"}
+		}
 	},
 	{ 'HiPhish/rainbow-delimiters.nvim', dependencies = {'nvim-treesitter/nvim-treesitter'} },
 	{ 'romgrk/nvim-treesitter-context', dependencies = {'nvim-treesitter/nvim-treesitter'} }, -- first line shows ctx
 	{ 'RRethy/nvim-treesitter-textsubjects', dependencies = {'nvim-treesitter/nvim-treesitter'} }, -- context aware selection
-	{ 'nvim-treesitter/playground',
-		lazy= true,
-		cmd = {'TSPlaygroundToggle'},
-		dependencies = {'nvim-treesitter/nvim-treesitter'},
-		keys = {{"<leader>sp", ":TSPlaygroundToggle<CR>", desc = "TS Playground" }}
-	},
 	{ 'windwp/nvim-ts-autotag' },
 	-- }}} 
 	-- {{{ FILE TYPE SPECIFICS
@@ -996,19 +1070,45 @@ local plugin_setups = {
 	{ 'elixir-editors/vim-elixir',  ft = {'elixir'} },
 	{ 'DingDean/wgsl.vim',          ft = {'wgsl'} },
 	{ 'mpickering/hlint-refactor-vim', ft = {'haskell'} },
+	{
+		'mrcjkb/haskell-tools.nvim',
+		version = '^6', -- Recommended
+		lazy = false, -- This plugin is already lazy
+	},
 	{ 'honza/dockerfile.vim',       ft = {'Dockerfile'} },
 	{'neoclide/vim-jsx-improve',    ft = {'javascript', 'jsx', 'javascript.jsx'} },
 	{ 'kmonad/kmonad-vim',          ft = {'kbd'} }, -- kmonad config
 	{'slint-ui/vim-slint', ft={'slint'}},
+	{
+		"yuukiflow/Arduino-Nvim",
+		dependencies = {
+			"nvim-telescope/telescope.nvim",
+			"neovim/nvim-lspconfig",
+		},
+		config = function()
+			-- Load Arduino plugin for .ino files
+			vim.api.nvim_create_autocmd("FileType", {
+				pattern = "arduino",
+				callback = function()
+					require("Arduino-Nvim")
+				end,
+			})
+		end,
+	},
 	{ 'kaarmu/typst.vim', ft = 'typst', lazy = false},
 	{
 		"OXY2DEV/markview.nvim",
 		lazy = false,
-		typst = {
-			enable = false
-		},
-		markdown = {
-			enable = true
+		opts = {
+			typst = {
+				enable = false
+			},
+			preview = {
+				filetypes = { "markdown", "quarto", "rmd" },
+			},
+			markdown = {
+				enable = true
+			}
 		}
 	},
 	{
@@ -1063,7 +1163,7 @@ local plugin_setups = {
 		'mfussenegger/nvim-dap-python',
 		ft = {'python'},
 		requires = {'mfussenegger/nvim-dap'},
-		config = function(_, opts) 
+		config = function(_, opts)
 			local path = "~/.local/share/nvim/mason/packages/debugpy/venv/bin/python"
 			require("dap-python").setup(path)
 		end
@@ -1165,9 +1265,6 @@ local plugin_setups = {
 
 -- {{{ Helper functions for organizing
 plugin_setups.__index = plugin_setups
-plugin_setups.insert = function(a)
-	table.insert(a, b)
-end
 
 function plugin_setups:load()
 	require('lazy').setup(self)
@@ -1219,7 +1316,7 @@ plugin_setups:concat {
 	, config = function ()
 		require("pets").setup{}
 	end
-	, keys = 
+	, keys =
 		{ {'<leader>fp', '<cmd>PetsNew yeeeee<cr>', desc = 'new pet :D'},
 		}
 	, lazy = true
@@ -1249,7 +1346,7 @@ plugin_setups:concat {
 		, "nvim-treesitter/nvim-treesitter",
 		}
 	, lazy = true
-	, config = function() 
+	, config = function()
 		require("codecompanion").setup({
 		  adapters = {
 			ollama = function()

@@ -244,6 +244,21 @@ return {
   })
 }
     ]], { i(1, "-5"), i(2, "5"), i(3, "calc.sin(x)") })
-  )
-
+  ),
+  s(
+    { trig = "ra_uni", snippetType="autosnippet", wordTrig=false },
+    fmta("", {})
+  ),
+  s(
+    { trig = "la_uni", snippetType="autosnippet", wordTrig=false },
+    fmta("", {})
+  ),
+  s(
+    { trig = "ua_uni", snippetType="autosnippet", wordTrig=false },
+    fmta("", {})
+  ),
+  s(
+    { trig = "da_uni", snippetType="autosnippet", wordTrig=false },
+    fmta("", {})
+  ),
 }
