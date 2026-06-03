@@ -178,10 +178,11 @@ local plugin_setups = {
 							arguments = { vim.v.null },
 						}, { bufnr = bufnr })
 					end, { desc = "[T]inymist [U]npin", noremap = true })
+
+					vim.keymap.set("n", "<leader>pt", function() 
+						vim.lsp.get_clients({ name = "tinymist" })[1]:exec_cmd({ command = "tinymist.startDefaultPreview", title = "Preview" })
+					end, { desc = "[P]review [t]ypst", noremap = true })
 				end,
-				settings = {
-					["syntaxOnly"] = "enable"
-				}
 			})
 
 			vim.lsp.config("csharp_ls", {on_attach = on_attach})
@@ -219,7 +220,7 @@ local plugin_setups = {
 			vim.lsp.enable({
 				'ruff', 'ts_ls', 'elixirls', 'clangd', 'slint_lsp', 'wgsl_analyzer', 'texlab', 'html', 'cssls',
 				'golangci_lint_ls', 'asm_lsp', 'svelte', 'tinymist', 'csharp_ls', 'vala_ls', 'lua_ls', 'emmet_language_server',
-				'basedpyright'
+				'basedpyright', 'gleam'
 			})
 
 
@@ -338,7 +339,7 @@ local plugin_setups = {
 			"nvim-neotest/nvim-nio",
 			"nvim-lua/plenary.nvim",
 			"antoinemadec/FixCursorHold.nvim",
-			"nvim-treesitter/nvim-treesitter",
+			-- "nvim-treesitter/nvim-treesitter",
 
 			-- Adapters
 			"nvim-neotest/neotest-python"
@@ -676,12 +677,13 @@ local plugin_setups = {
 		keys = {{"<leader>tg", "<cmd>GrammarousCheck<CR>", desc = "Grammar checker", unpack(opts)}}, cmd = {'GrammarousCheck'} },
 	{ 'folke/todo-comments.nvim', setup = true },
 	{ 'norcalli/nvim-colorizer.lua', setup = true },
-	{
-		'numToStr/Comment.nvim',
-		opts = {
-			-- add any options here
-		}
-	},
+	{ 'nvim-mini/mini.comment', version = false },
+	-- {
+	-- 	'numToStr/Comment.nvim',
+	-- 	opts = {
+	-- 		-- add any options here
+	-- 	}
+	-- },
 	{ 'chrisbra/NrrwRgn', cmd = {'NR', 'NW', 'NRP', 'NRM'} },
 	'lambdalisue/suda.vim',
 	-- }}}
@@ -999,56 +1001,57 @@ local plugin_setups = {
 	'NMAC427/guess-indent.nvim',
 
 	-- {{{ TREESITTER PLUGINS
-	{
-		'nvim-treesitter/nvim-treesitter',
-		build = ':TSUpdate',
-		lazy = false,
-		config = function()
-			require 'nvim-treesitter.configs'.setup {
-				ensure_installed = { "c", "lua", "vim", "vimdoc", "query",  "css", "html", "haskell", "c_sharp", "markdown", "markdown_inline", "vala", "blueprint" },
-				rainbow = {
-					enable = true,
-					disable = {'bash'} -- please disable bash until I figure #1 out
-				},
-				autotag = {
-					enable = true,
-				},
-				textsubjects = {
-					enable = true,
-					prev_selection = ',', -- (Optional) keymap to select the previous selection
-					keymaps = {
-						['.'] = 'textsubjects-smart',
-						[';'] = 'textsubjects-container-outer',
-						['i;'] = 'textsubjects-container-inner',
-					},
-				},
-
-				incremental_selection = {
-					enable = true,
-					keymaps = {
-						init_selection = "<leader>aa", -- false to disable
-						node_incremental = "<leader>aa",
-						scope_incremental = "<leader>as",
-						node_decremental = "<leader>ad",
-					}
-				},
-				highlight = {
-					enable = true,
-				}
-			}
-
-
-			vim.api.nvim_set_hl(0, "@line_comment", { link = "comment" })
-
-		end,
-		keys = {
-			{"<leader>it", ":InspectTree<CR>", desc="inspect tree"}
-		}
-	},
-	{ 'HiPhish/rainbow-delimiters.nvim', dependencies = {'nvim-treesitter/nvim-treesitter'} },
-	{ 'romgrk/nvim-treesitter-context', dependencies = {'nvim-treesitter/nvim-treesitter'} }, -- first line shows ctx
-	{ 'RRethy/nvim-treesitter-textsubjects', dependencies = {'nvim-treesitter/nvim-treesitter'} }, -- context aware selection
-	{ 'windwp/nvim-ts-autotag' },
+	-- {
+	-- 	'nvim-treesitter/nvim-treesitter',
+	-- 	build = ':TSUpdate',
+		-- branch = 'main',
+	-- 	lazy = false,
+	-- 	config = function()
+	-- 		require 'nvim-treesitter'.setup {
+	-- 			-- ensure_installed = { "c", "lua", "vim", "vimdoc", "query",  "css", "html", "haskell", "c_sharp", "markdown", "markdown_inline", "vala", "blueprint" },
+	-- 			-- rainbow = {
+	-- 			-- 	enable = true,
+	-- 			-- 	disable = {'bash'} -- please disable bash until I figure #1 out
+	-- 			-- },
+	-- 			-- autotag = {
+	-- 			-- 	enable = true,
+	-- 			-- },
+	-- 			-- textsubjects = {
+	-- 			-- 	enable = true,
+	-- 			-- 	prev_selection = ',', -- (Optional) keymap to select the previous selection
+	-- 			-- 	keymaps = {
+	-- 			-- 		['.'] = 'textsubjects-smart',
+	-- 			-- 		[';'] = 'textsubjects-container-outer',
+	-- 			-- 		['i;'] = 'textsubjects-container-inner',
+	-- 			-- 	},
+	-- 			-- },
+	--
+	-- 			-- incremental_selection = {
+	-- 			-- 	enable = true,
+	-- 			-- 	keymaps = {
+	-- 			-- 		init_selection = "<leader>aa", -- false to disable
+	-- 			-- 		node_incremental = "<leader>aa",
+	-- 			-- 		scope_incremental = "<leader>as",
+	-- 			-- 		node_decremental = "<leader>ad",
+	-- 			-- 	}
+	-- 			-- },
+	-- 			-- highlight = {
+	-- 			-- 	enable = true,
+	-- 			-- }
+	-- 		}
+	--
+	--
+	-- 		vim.api.nvim_set_hl(0, "@line_comment", { link = "comment" })
+	--
+	-- 	end,
+	-- 	keys = {
+	-- 		{"<leader>it", ":InspectTree<CR>", desc="inspect tree"}
+	-- 	}
+	-- },
+	-- { 'HiPhish/rainbow-delimiters.nvim', dependencies = {'nvim-treesitter/nvim-treesitter'} },
+	-- { 'romgrk/nvim-treesitter-context', dependencies = {'nvim-treesitter/nvim-treesitter'} }, -- first line shows ctx
+	-- { 'RRethy/nvim-treesitter-textsubjects', dependencies = {'nvim-treesitter/nvim-treesitter'} }, -- context aware selection
+	-- { 'windwp/nvim-ts-autotag' },
 	-- }}} 
 	-- {{{ FILE TYPE SPECIFICS
 	{ 'mfussenegger/nvim-jdtls', ft = {'java'} },
@@ -1109,18 +1112,6 @@ local plugin_setups = {
 			markdown = {
 				enable = true
 			}
-		}
-	},
-	{
-		'chomosuke/typst-preview.nvim',
-		ft = 'typst',
-		version = '1.*',
-		opts = {
-			dependencies_bin = { ['tinymist'] = 'tinymist' }
-		},
-		build = function() require 'typst-preview'.update() end,
-		keys = {
-			{"<leader>pt", ":TypstPreview<CR>", desc="Typst Preview"}
 		}
 	},
 	{
@@ -1343,7 +1334,7 @@ plugin_setups:concat {
 	{ "olimorris/codecompanion.nvim"
 	, dependencies =
 		{ "nvim-lua/plenary.nvim"
-		, "nvim-treesitter/nvim-treesitter",
+		-- , "nvim-treesitter/nvim-treesitter",
 		}
 	, lazy = true
 	, config = function()
