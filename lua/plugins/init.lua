@@ -145,7 +145,7 @@ local plugin_setups = {
 			vim.lsp.config("elixirls", {  cmd = { "elixir-ls" }, on_attach = on_attach   })
 			vim.lsp.config("clangd", {    flags = lsp_flags, on_attach = on_attach   })
 			vim.lsp.config("slint_lsp", {    flags = lsp_flags, on_attach = on_attach   })
-			vim.lsp.config("wgsl_analyzer", {    flags = lsp_flags, on_attach = on_attach   })
+			vim.lsp.config("wgsl_(analyzer", {    flags = lsp_flags, on_attach = on_attach   })
 			vim.lsp.config("texlab", {
 				flags = lsp_flags,
 				on_attach = on_attach,
@@ -158,10 +158,17 @@ local plugin_setups = {
 			vim.lsp.config("svelte", { on_attach = on_attach })
 
 			vim.lsp.config("tinymist", {
-
-				on_init = function(client)
-					client.offset_encoding = "utf-8"
-				end,
+				settings = {
+					["preview.invertColors"] = "never",
+					["preview.background"] = { "--data-plane-host=127.0.0.1:23635", "--invert-colors=never" },
+					preview = {
+						invertColors = "never",
+						background = {
+							args = { "--data-plane-host=127.0.0.1:23635", "--invert-colors=never" }
+						}
+					},
+					-- ["syntaxOnly"] = "enable",
+				},
 				on_attach = function(client, bufnr)
 					vim.keymap.set("n", "<leader>ltp", function()
 						client:exec_cmd({
@@ -182,6 +189,9 @@ local plugin_setups = {
 					vim.keymap.set("n", "<leader>pt", function() 
 						vim.lsp.get_clients({ name = "tinymist" })[1]:exec_cmd({ command = "tinymist.startDefaultPreview", title = "Preview" })
 					end, { desc = "[P]review [t]ypst", noremap = true })
+
+					client.server_capabilities.semanticTokensProvider = nil
+
 				end,
 			})
 
