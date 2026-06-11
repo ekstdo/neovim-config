@@ -159,15 +159,12 @@ local plugin_setups = {
 
 			vim.lsp.config("tinymist", {
 				settings = {
-					["preview.invertColors"] = "never",
-					["preview.background"] = { "--data-plane-host=127.0.0.1:23635", "--invert-colors=never" },
 					preview = {
-						invertColors = "never",
-						background = {
-							args = { "--data-plane-host=127.0.0.1:23635", "--invert-colors=never" }
+						browsing = {
+							args = {"--data-plane-host=127.0.0.1:0", "--invert-colors=never", "--open"}
 						}
 					},
-					-- ["syntaxOnly"] = "enable",
+					-- ["syntaxOnly"] = "enable",  -- if you want to save on RAM
 				},
 				on_attach = function(client, bufnr)
 					vim.keymap.set("n", "<leader>ltp", function()
@@ -186,11 +183,48 @@ local plugin_setups = {
 						}, { bufnr = bufnr })
 					end, { desc = "[T]inymist [U]npin", noremap = true })
 
+					local stdin = assert(vim.uv.new_pipe())
+					local stdout = assert(vim.uv.new_pipe())
+					local stderr = assert(vim.uv.new_pipe())
+					local addr = 'ws://127.0.0.1:23626'
+					local server = nil
 					vim.keymap.set("n", "<leader>pt", function() 
-						vim.lsp.get_clients({ name = "tinymist" })[1]:exec_cmd({ command = "tinymist.startDefaultPreview", title = "Preview" })
+						local h = client:exec_cmd({ command = "tinymist.startDefaultPreview", title = "Preview" })
+						-- vim.lsp.get_clients({ name = "tinymist" })[1]
+						vim.defer_fn(function() 
+							-- local websocat_handle, _ = assert(vim.uv.spawn("websocat", {
+							-- 	args = {
+							-- 		'-B',
+							-- 		'10000000',
+							-- 		'--origin',
+							-- 		'http://localhost',
+							-- 		addr,
+							-- 	},
+							-- 	stdio = { stdin, stdout, stderr },
+							-- }))
+							-- server = websocat_handle
+
+							-- local logfile = vim.lsp.log.get_filename()
+							-- local f = io.open(logfile, "rb")
+						end, 500)
 					end, { desc = "[P]review [t]ypst", noremap = true })
 
-					client.server_capabilities.semanticTokensProvider = nil
+						-- vim.lsp.get_clients({ name = "tinymist" })[1]:exec_cmd({ command = "tinymist.startDefaultPreview", title = "Preview" })
+					vim.api.nvim_create_autocmd("CursorMoved", {
+						callback = function()
+							if server == nil then
+								return 
+							end
+							local cursor = vim.api.nvim_win_get_cursor(0)
+							local line = cursor[1] - 1
+							stdin:write(vim.json.encode {
+								event = 'panelScrollTo',
+								filepath = vim.api.nvim_buf_get_name(0),
+								line = line,
+								character = cursor[2],
+							  } .. '\n')
+						end,
+					})
 
 				end,
 			})
