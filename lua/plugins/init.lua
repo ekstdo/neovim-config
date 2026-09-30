@@ -146,6 +146,7 @@ local plugin_setups = {
 			vim.lsp.config("clangd", {    flags = lsp_flags, on_attach = on_attach   })
 			vim.lsp.config("slint_lsp", {    flags = lsp_flags, on_attach = on_attach   })
 			vim.lsp.config("wgsl_(analyzer", {    flags = lsp_flags, on_attach = on_attach   })
+			vim.lsp.config("fortls", {    flags = lsp_flags, on_attach = on_attach   })
 			vim.lsp.config("texlab", {
 				flags = lsp_flags,
 				on_attach = on_attach,
@@ -264,7 +265,7 @@ local plugin_setups = {
 			vim.lsp.enable({
 				'ruff', 'ts_ls', 'elixirls', 'clangd', 'slint_lsp', 'wgsl_analyzer', 'texlab', 'html', 'cssls',
 				'golangci_lint_ls', 'asm_lsp', 'svelte', 'tinymist', 'csharp_ls', 'vala_ls', 'lua_ls', 'emmet_language_server',
-				'basedpyright', 'gleam'
+				'basedpyright', 'gleam', 'fortls'
 			})
 
 
@@ -747,7 +748,7 @@ local plugin_setups = {
 				local function opts(desc)
 					return { desc = "nvim-tree: " .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
 				end
-				api.config.mappings.default_on_attach(bufnr)
+				api.map.on_attach.default(bufnr)
   				vim.keymap.set("n", "r",              api.fs.rename_full,                 opts("Rename: Full Path"))
 				vim.keymap.del("n", "u", opts("Rename: Full Path"))
 				vim.keymap.del("n", "e", opts("Rename: Basename"))
