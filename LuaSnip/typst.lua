@@ -261,4 +261,8 @@ return {
     { trig = "da_uni", snippetType="autosnippet", wordTrig=false },
     fmta("", {})
   ),
+  s(
+    { trig = "nnyo", snippetType = "autosnippet" },
+    fmta(", name = \"yo\"", {})
+  )
 }

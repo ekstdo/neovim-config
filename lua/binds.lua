@@ -12,7 +12,7 @@ if BINDINGS == "colemak" then
   vim.keymap.set("", "U", "H", { desc = "Top of screen" })
   vim.keymap.set("", "i", "l", { desc = "Right" })
   vim.keymap.set("", "n", "h", { desc = "Left" })
-
+  
   -- wordwise movement
   vim.keymap.set("", "h", "b", { desc = "Previous word" })
   vim.keymap.set("", "H", "B", { desc = "Previous WORD" })
